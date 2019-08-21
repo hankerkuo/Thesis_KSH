@@ -11,6 +11,13 @@ def vertices_info(img_name):
             map(int, vertices[2].split('&')), map(int, vertices[3].split('&'))]
 
 
+# used for the CCPD_FR training data, read the LP vertices
+def FR_vertices_info(img_name):
+    vertices = img_name.split('.')[0].split('_')
+    return [map(int, vertices[0].split('&')), map(int, vertices[1].split('&')),
+            map(int, vertices[2].split('&')), map(int, vertices[3].split('&'))]
+
+
 if __name__ == '__main__':
     img_name = '01-0_1-249&528_393&586-392&584_249&586_250&530_393&528-0_0_25_27_7_26_29-131-21.jpg'
     BBCor = BBCor_info(img_name)

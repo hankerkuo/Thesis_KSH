@@ -1,5 +1,3 @@
-
-
 # for one-line yolo data, return the x, y, w, h into a list with float data type [x, y, w, h]
 def yolo_readline(txt_file):
     with open(txt_file) as file:
