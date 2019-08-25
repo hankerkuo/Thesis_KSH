@@ -30,6 +30,7 @@ if __name__ == '__main__':
         LP_vertices = vertices_info(basename(img_path))
         LP_vertices = cor_sys_trans(BBCor[0], *LP_vertices)
         file_name = ''
+        # make the file name format similar to CCPD files
         for i, vertex in enumerate(LP_vertices):
             file_name += str(vertex[0]) + '&' + str(vertex[1])
             if i == 3:

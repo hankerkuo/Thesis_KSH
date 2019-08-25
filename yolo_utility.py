@@ -7,7 +7,7 @@ def yolo_readline(txt_file):
 
 
 # transfer yolo format to the BB coordinates with actual pixel value
-# img_shape -> (y, x)
+# img_shape -> (y, x), usually use np.shape() to get the shape from cv2.imread object
 # x, y, w, h is the yolo format label
 # return value: BBCor -> [[x1, y1], [x2, y2]]
 def yolo_to_BBCor(img_shape, x, y, w, h):
