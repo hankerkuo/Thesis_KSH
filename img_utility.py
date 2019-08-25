@@ -60,7 +60,7 @@ def read_img_from_dir(path):
             if img.split('.')[1] in ['jpg', 'png', 'jpeg', 'JPG', 'PNG', 'JPEG']:
                 imgs.append(join(path, img))
         except:
-            print 'in read_img_from_dir function, "', img, '" has been passed'
+            print 'in read_img_from_dir function, "', img, '" has been omitted'
     return imgs
 
 
