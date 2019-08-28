@@ -90,10 +90,5 @@ def IoU(BB_1, BB_2):
 
 
 if __name__ == '__main__':
-    # iou = IoU([[0, 0], [5, 5]], [[1, 1], [7, 7]])
-    # print iou
-    pts1 = [20, 20]
-    pts2 = [30, 30]
-    img_shape = [100, 200]
-    pts_ratio = pixel_to_ratio(img_shape, pts1, pts2)
-    print pts_ratio
+    iou = IoU([[5, 4], [9, 6]], [[5.5, 4.5], [9.5, 6.5]])
+    print iou
