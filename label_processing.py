@@ -10,8 +10,8 @@ from random import sample
 # return the mean value of LP size in a dataset of CCPD_FR format images
 # need the fixed training input dimension (square for input images)
 # can pass total_stride argument (total stride of model)
-def mean_size_LP(path_to_images, training_dim, total_stride=1):
-    imgs_path = read_img_from_dir(path_to_images)
+def mean_size_LP(img_folder, training_dim, total_stride=1):
+    imgs_path = read_img_from_dir(img_folder)
     imgs_amount = len(imgs_path)
     W, H = 0., 0.
     for img_path in imgs_path:
