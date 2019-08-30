@@ -1,10 +1,12 @@
 # this script is used to process the CCPD_FR labels and make them fit the required training format
-
 import cv2
 import numpy as np
 from img_utility import pts_to_BBCor, read_img_from_dir, pixel_to_ratio, IoU
-from CCPD_utility import FR_vertices_info
-from random import sample
+from CCPD_utility import FR_vertices_info, vertices_info
+from random import sample, shuffle
+from collections import deque
+from threading import Thread, Lock
+from time import sleep
 
 
 # return the mean value of LP size in a dataset of CCPD_FR format images
@@ -29,7 +31,7 @@ def mean_size_LP(img_folder, training_dim, total_stride=1):
 # need to give the dimension for training and the total stride in the model
 # label shape -> [y, x, 1 + 2*4], y and x are the downsampled output map size
 # label format -> [object_1or0, x1, y1, x2, y2, x3, y3, x4, y4] pts from bottom right and clockwise
-def CCDP_FR_to_training_label(img_path, training_dim, stride):
+def CCDP_FR_to_training_label(img_path, training_dim, stride, CCPD_origin=False):
 
     side = 3.5  # calculated by training_dim = 208 and stride = 16
     img_shape = cv2.imread(img_path).shape
@@ -37,7 +39,12 @@ def CCDP_FR_to_training_label(img_path, training_dim, stride):
 
     assert training_dim % stride == 0, 'training_dim dividing stride must be a integer'
 
-    LP_Cor = np.array(pixel_to_ratio(img_shape, *FR_vertices_info(img_path))) * training_dim
+    if CCPD_origin:
+        vertices = vertices_info(img_path)
+    else:
+        vertices = FR_vertices_info(img_path)
+
+    LP_Cor = np.array(pixel_to_ratio(img_shape, *vertices)) * training_dim
     LP_BB = np.array(pts_to_BBCor(*LP_Cor))
 
     LP_Cor_outdim = LP_Cor / stride
@@ -80,7 +87,107 @@ def batch_data_generator(img_folder, batch_size, training_dim, stride):
     return np.array(x_data), y_data
 
 
+# the class provides batch training data
+# need to give arguments -> img_folder, batch_size, training_dim, stride
+# it can be served as 1. a infinite iterator which keeps providing data, each image in the folder will be provided
+#                        before next epoch, the image will be randomly selected (the 'shuffle' argument) in every epoch
+#                     2. a daemon threading data provider, which is preferred and much faster than the iterator
+class DataProvider:
+
+    def __init__(self, img_folder, batch_size, training_dim, stride, CCPD_origin=False, shuffle=True):
+        self.imgs_paths = read_img_from_dir(img_folder)
+        self.batch_size = batch_size
+        self.training_dim = training_dim
+        self.stride = stride
+        self.out_dim = training_dim / stride
+        self.samples = deque(self.imgs_paths)
+        self.CCPD_origin = CCPD_origin
+        self.shuffle = shuffle
+        self.x_data, self.y_data = self.create_buffer(batch_size)
+        self.buffer_loaded = False
+        self._lock = Lock()
+        self.thread = Thread()
+        self.stop_buffer = False
+
+    def __iter__(self):
+        if shuffle:
+            shuffle(self.samples)
+        return self
+
+    def next(self):
+        x_data = []
+        y_data = []
+
+        for b in range(self.batch_size):
+            if len(self.samples) == 0:
+                self.samples = deque(self.imgs_paths)
+                if shuffle:
+                    shuffle(self.samples)
+                break
+            img_path = self.samples.pop()
+            x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)))
+            y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
+                                                    self.stride, CCPD_origin=self.CCPD_origin))
+
+        if len(x_data) == 0:
+            return self.next()
+        else:
+            return np.array(x_data), np.array(y_data)
+
+    def create_buffer(self, batch_size):
+        x = np.empty((batch_size, self.training_dim, self.training_dim, 3))
+        y = np.empty((batch_size, self.out_dim, self.out_dim, 1 + 2 * 4))
+        return x, y
+
+    def get_batch(self):
+        while self.buffer_loaded is False:
+            sleep(0.01)
+        with self._lock:
+            self.buffer_loaded = False
+            return self.x_data, self.y_data
+
+    def load(self):
+        while True:
+            while self.buffer_loaded is True:
+                sleep(0.01)
+                if self.stop_buffer:
+                    return 0
+            with self._lock:
+                x_data = []
+                y_data = []
+
+                for b in range(self.batch_size):
+                    if len(self.samples) == 0:
+                        self.samples = deque(self.imgs_paths)
+                        if shuffle:
+                            shuffle(self.samples)
+                        break
+                    img_path = self.samples.pop()
+                    x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)))
+                    y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
+                                                            self.stride, CCPD_origin=self.CCPD_origin))
+
+                if len(x_data) == 0:
+                    return self.load()
+                else:
+                    self.x_data = np.array(x_data)
+                    self.y_data = np.array(y_data)
+
+                    self.buffer_loaded = True
+                    print 'loading batch image to buffer... done!'
+
+    def start_loading(self):
+        self.thread = Thread(target=self.load)
+        self.thread.setDaemon(True)
+        self.thread.start()
+
+    def stop_loading(self):
+        self.stop_buffer = True
+        self.thread.join()
+
+
 # receive the output of the network and map the label to the original image
+# now this function only work with single image prediction label
 def predicted_label_to_origin_image(output_labels, stride, prob_threshold=0.9):
     side = 3.5
 
@@ -122,15 +229,17 @@ def predicted_label_to_origin_image(output_labels, stride, prob_threshold=0.9):
         '''
         need a NMS function here
         '''
-        return label_to_origin
+    return label_to_origin
 
-
-
-    return 0
 
 if __name__ == '__main__':
-    path = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746/'
+    path = '/home/shaoheng/Documents/cars_label_FRNet/ccpd_dataset/ccpd_base'
+    data_provider = DataProvider(path, 32, 208, 16, CCPD_origin=True)
+    data_provider.start_loading()
     while 1:
-        x_data, y_data = batch_data_generator(path, 32, 208, 16)
-        cv2.imshow('img', x_data[0])
-        cv2.waitKey(0)
+        data = data_provider.get_batch()
+        print data[0].shape
+        # cv2.imshow('img', data[0][1])
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
