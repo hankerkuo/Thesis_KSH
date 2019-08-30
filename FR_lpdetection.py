@@ -7,10 +7,10 @@ import cv2
 if __name__ == '__main__':
 
     model = model_WPOD()
-    model.load_weights('/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_746/Dim208It123499Bsize64.h5')
+    model.load_weights('/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_746_dataprovider/Dim208It3000Bsize64.h5')
 
-    img = cv2.imread('/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746/446&482_197&448_185&370_434&404.jpg')
-    # img_feed = cv2.resize(img, (1000, 1000))
+    img = cv2.imread('/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746/187&148_91&137_93&101_189&112.jpg')
+    # img_feed = cv2.resize(img, (500, 500))
     img_feed = np.expand_dims(img, 0)
     output_label = model.predict(img_feed)
 
