@@ -7,16 +7,18 @@ Generate the train.txt and test.txt for YOLO
 from os.path import splitext, isfile, join, basename
 from os import remove
 from glob import glob, iglob
+from img_utility import read_img_from_dir
 
-# root path
-dir = '/home/shaoheng/Documents/cars_label_FRNet/cars/foryolo'
+
 '''
 First part
 '''
+
+
 def clean_data(dir):
 	# define the dir path which includes all the images and labels
 
-	img_lst = glob(dir+'/*.jpg')  # modify to png if needed
+	img_lst = read_img_from_dir(dir)  # modify to png if needed
 
 	for img in img_lst:
 		split_former = splitext(img)[0]
@@ -28,6 +30,8 @@ def clean_data(dir):
 '''
 second part, source:https://github.com/ManivannanMurugavel/YOLO-Annotation-Tool/blob/master/process.py
 '''
+
+
 def training_data_sumup(dir):
 	# Percentage of images to be used for the test set
 	percentage_test = 0
@@ -50,5 +54,8 @@ def training_data_sumup(dir):
 			counter = counter + 1
 
 
-# clean_data(dir)
-training_data_sumup(dir)
+if __name__ == '__main__':
+	# root path
+	dir = '/home/shaoheng/Documents/cars_label_FRNet/cars/foryolo'
+	clean_data(dir)
+	training_data_sumup(dir)
