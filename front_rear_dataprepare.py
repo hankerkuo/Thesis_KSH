@@ -1,5 +1,7 @@
-# this script is used to cut the CCPD image files into FR part with corresponding vertices information
-# just need to give the input image directory and output directory
+"""
+this script is used to cut the CCPD image files into FR part with corresponding vertices information
+just need to give the input image directory and output directory
+"""
 from CCPD_utility import vertices_info
 from yolo_utility import yolo_readline, yolo_to_BBCor
 from img_utility import cut_by_BBCor, read_img_from_dir, cor_sys_trans

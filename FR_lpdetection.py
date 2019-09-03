@@ -7,10 +7,10 @@ import cv2
 if __name__ == '__main__':
 
     model = model_WPOD()
-    model.load_weights('/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_746_dataprovider/Dim208It3000Bsize64.h5')
+    model.load_weights('/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_746_dataprovider/Dim208It303000Bsize64.h5')
 
-    img = cv2.imread('/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746/187&148_91&137_93&101_189&112.jpg')
-    # img_feed = cv2.resize(img, (500, 500))
+    img = cv2.imread('/home/shaoheng/Documents/cars_label_FRNet/ccpd_dataset/ccpd_rotate/02375-109_71-321&355_525&490-510&479_337&417_338&365_511&426-0_0_10_1_29_33_33-174-34.jpg')
+    # img_feed = cv2.resize(img, (3000, 3000))
     img_feed = np.expand_dims(img, 0)
     output_label = model.predict(img_feed)
 
@@ -26,7 +26,9 @@ if __name__ == '__main__':
     final_labels = predicted_label_to_origin_image(output_label, 16, prob_threshold=0.8)
 
     for i, final_label in enumerate(final_labels):
-        img_out = cut_by_fourpts(img, *final_label)
+        prob, vertices = final_label
+        img_out = cut_by_fourpts(img, *vertices)
+        print prob
         try:
             cv2.imshow('%d' % i, img_out)
             cv2.waitKey(0)

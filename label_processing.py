@@ -1,4 +1,6 @@
-# this script is used to process the CCPD_FR labels and make them fit the required training format
+"""
+this script is used to process the CCPD_FR labels and make them fit the required training format
+"""
 import cv2
 import numpy as np
 from img_utility import pts_to_BBCor, read_img_from_dir, pixel_to_ratio, IoU
@@ -185,10 +187,18 @@ class DataProvider:
         self.stop_buffer = True
         self.thread.join()
 
+    def load_whole_folder(self):  # risky
+        images = []
+        for i, sample in enumerate(self.samples):
+            images.append(cv2.imread(sample))
+            print 1. * i / len(self.samples)
+        return images
+
 
 # receive the output of the network and map the label to the original image
 # now this function only work with single image prediction label
-def predicted_label_to_origin_image(output_labels, stride, prob_threshold=0.9):
+# in each label -> [prob, cor_after_affine]
+def predicted_label_to_origin_image(output_labels, stride, prob_threshold=0.9, use_nms=True):
     side = 3.5
 
     for label in output_labels:
@@ -225,21 +235,28 @@ def predicted_label_to_origin_image(output_labels, stride, prob_threshold=0.9):
                         pts[1] = np.clip(pts[1], 0, out_h * stride)
                     '''
 
-                    label_to_origin.append(cor_after_affine)
-        '''
-        need a NMS function here
-        '''
+                    label_to_origin.append([prob, cor_after_affine])
+        if use_nms:
+            label_to_origin = nms(label_to_origin)
     return label_to_origin
+
+
+# nms function, labels -> a list of labels, its element is [probability, coordinates]
+def nms(labels, threshold=0.5):
+    labels.sort(key=lambda x: x[0], reverse=True)
+    labels = deque(labels)
+    labels_nms = []
+    while len(labels) > 0:
+        now_handle = labels.popleft()
+        while len(labels) > 0 and IoU(pts_to_BBCor(*now_handle[1]), pts_to_BBCor(*labels[0][1])) > threshold:
+            labels.popleft()
+        labels_nms.append(now_handle)
+    return labels_nms
 
 
 if __name__ == '__main__':
     path = '/home/shaoheng/Documents/cars_label_FRNet/ccpd_dataset/ccpd_base'
     data_provider = DataProvider(path, 32, 208, 16, CCPD_origin=True)
-    data_provider.start_loading()
-    while 1:
-        data = data_provider.get_batch()
-        print data[0].shape
-        # cv2.imshow('img', data[0][1])
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+    # data_provider.start_loading()
+
 

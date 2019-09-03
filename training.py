@@ -1,5 +1,7 @@
-# main training script
-# remember to set 'iteration_to_load' variable to 0 when train from scratch
+"""
+main training script
+remember to set 'iteration_to_load' variable to 0 when train from scratch
+"""
 import lpdetect_model
 from loss import loss
 from keras.optimizers import Adam
@@ -17,16 +19,16 @@ if __name__ == '__main__':
     optimizer = Adam(lr=0.01)
     record_interval = 1000
 
-    training_data_folder = '/home/shaoheng/Documents/cars_label_FRNet/ccpd_dataset/ccpd_base'
-    saving_folder = '/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_origin'
+    training_data_folder = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746'
+    saving_folder = '/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_746_dataprovider'
 
     model.compile(loss=loss, optimizer=optimizer)
 
-    iteration_to_load = 8000
+    iteration_to_load = 3000
     # comment this line if train from scratch
     model.load_weights(join(saving_folder, 'Dim%dIt%dBsize%d.h5' % (training_dim, iteration_to_load, batch_size)))
 
-    data_provider = DataProvider(training_data_folder, batch_size, training_dim, 16, CCPD_origin=True)
+    data_provider = DataProvider(training_data_folder, batch_size, training_dim, 16, CCPD_origin=False)
     data_provider.start_loading()
 
     start_time = time()
