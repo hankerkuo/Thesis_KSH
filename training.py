@@ -19,14 +19,14 @@ if __name__ == '__main__':
     optimizer = Adam(lr=0.01)
     record_interval = 1000
 
-    training_data_folder = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746'
-    saving_folder = '/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_746_dataprovider'
+    training_data_folder = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total2333'
+    saving_folder = '/home/shaoheng/Documents/Thesis_KSH/training_result/CCPD_FR_2333'
+
+    iteration_to_load = 0
+    # comment this line if train from scratch
+    # model.load_weights(join(saving_folder, 'Dim%dIt%dBsize%d.h5' % (training_dim, iteration_to_load, batch_size)))
 
     model.compile(loss=loss, optimizer=optimizer)
-
-    iteration_to_load = 3000
-    # comment this line if train from scratch
-    model.load_weights(join(saving_folder, 'Dim%dIt%dBsize%d.h5' % (training_dim, iteration_to_load, batch_size)))
 
     data_provider = DataProvider(training_data_folder, batch_size, training_dim, 16, CCPD_origin=False)
     data_provider.start_loading()
