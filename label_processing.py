@@ -165,7 +165,7 @@ class DataProvider:
                             shuffle(self.samples)
                         break
                     img_path = self.samples.pop()
-                    x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)))
+                    x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)) / 255.)
                     y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
                                                             self.stride, CCPD_origin=self.CCPD_origin))
 
@@ -198,46 +198,47 @@ class DataProvider:
 # receive the output of the network and map the label to the original image
 # now this function only work with single image prediction label
 # in each label -> [prob, cor_after_affine]
-def predicted_label_to_origin_image(output_labels, stride, prob_threshold=0.9, use_nms=True):
+def predicted_label_to_origin_image(ori_image_shape, label, stride, prob_threshold=0.9, use_nms=True):
     side = 3.5
 
-    for label in output_labels:
-        out_w = label.shape[1]
-        out_h = label.shape[0]
+    out_w = label.shape[1]
+    out_h = label.shape[0]
 
-        label_to_origin = []
-        for y in range(out_h):
-            for x in range(out_w):
-                prob = label[y, x, 0]      # integer
+    label_to_origin = []
+    for y in range(out_h):
+        for x in range(out_w):
+            prob = label[y, x, 0]      # integer
 
-                if prob >= prob_threshold:
-                    now_pixel = np.array([x + 0.5, y + 0.5])
+            if prob >= prob_threshold:
+                now_pixel = np.array([x + 0.5, y + 0.5])
 
-                    affinex = label[y, x, 2:5]  # shape = [3, ]
-                    affiney = label[y, x, 5:]   # shape = [3, ]
-                    # affinex[0] = max(affinex[0], 0)
-                    # affiney[1] = max(affiney[1], 0)
+                affinex = label[y, x, 2:5]  # shape = [3, ]
+                affiney = label[y, x, 5:]   # shape = [3, ]
+                affinex[0] = max(affinex[0], 0)
+                affiney[1] = max(affiney[1], 0)
 
-                    # base rectangle from br and clock-wise
-                    base_rectangle = np.array([[0.5, 0.5, 1], [-0.5, 0.5, 1], [-0.5, -0.5, 1], [0.5, -0.5, 1]])
+                # base rectangle from br and clock-wise
+                base_rectangle = np.array([[0.5, 0.5, 1], [-0.5, 0.5, 1], [-0.5, -0.5, 1], [0.5, -0.5, 1]])
 
-                    # cor_after_affine -> [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
-                    cor_after_affine = np.stack([np.sum(affinex * base_rectangle, axis=1),
-                                                 np.sum(affiney * base_rectangle, axis=1)], axis=1)  # shape = [4, 2]
-                    cor_after_affine = cor_after_affine * side
-                    cor_after_affine += now_pixel
-                    cor_after_affine *= stride
-                    cor_after_affine = cor_after_affine.astype(int)
+                # cor_after_affine -> [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+                cor_after_affine = np.stack([np.sum(affinex * base_rectangle, axis=1),
+                                             np.sum(affiney * base_rectangle, axis=1)], axis=1)  # shape = [4, 2]
+                cor_after_affine = cor_after_affine * side
+                cor_after_affine += now_pixel
+                cor_after_affine *= stride
+                cor_after_affine *= np.array([ori_image_shape[1] / (1. * out_w * stride),
+                                              ori_image_shape[0] / (1. * out_h * stride)])
+                cor_after_affine = cor_after_affine.astype(int)
 
-                    '''
-                    for pts in cor_after_affine:
-                        pts[0] = np.clip(pts[0], 0, out_w * stride)
-                        pts[1] = np.clip(pts[1], 0, out_h * stride)
-                    '''
+                # clip according to the size of original size of image
+                for pts in cor_after_affine:
+                    pts[0] = np.clip(pts[0], 0, ori_image_shape[1])
+                    pts[1] = np.clip(pts[1], 0, ori_image_shape[0])
 
-                    label_to_origin.append([prob, cor_after_affine])
-        if use_nms:
-            label_to_origin = nms(label_to_origin)
+                label_to_origin.append([prob, cor_after_affine])
+    if use_nms:
+        label_to_origin = nms(label_to_origin)
+
     return label_to_origin
 
 

@@ -86,8 +86,10 @@ def IoU(BB_1, BB_2):
 
     area_intersec = float(area_by_tl_br(*intersec_tl_br))
     area_union = float(area_by_tl_br(*union_tl_br))
-
-    return area_intersec / area_union
+    if area_union == 0:
+        return 0
+    else:
+        return area_intersec / area_union
 
 
 if __name__ == '__main__':
