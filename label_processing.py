@@ -11,6 +11,11 @@ from threading import Thread, Lock
 from time import sleep
 
 
+"""
+label pre-processing
+"""
+
+
 # return the mean value of LP size in a dataset of CCPD_FR format images
 # need the fixed training input dimension (square for input images)
 # can pass total_stride argument (total stride of model)
@@ -72,6 +77,30 @@ def CCDP_FR_to_training_label(img_path, training_dim, stride, CCPD_origin=False)
     return label
 
 
+# combine the labels of four images and make it a huge training label
+# be sure the label having same training dim and model stride
+def label_splicing(label1, label2, label3, label4):
+    w = label1.shape[1]
+    h = label1.shape[0]
+    label2 += np.array([0, w, 0, w, 0, w, 0, w, 0])
+    label3 += np.array([0, 0, h, 0, h, 0, h, 0, h])
+    label4 += np.array([0, w, h, w, h, w, h, w, h])
+    top_row = np.concatenate([label1, label2], axis=1)
+    bottom_row = np.concatenate([label3, label4], axis=1)
+    final_label = np.concatenate([top_row, bottom_row], axis=0)
+
+    return final_label
+
+
+# also splicing function but for images
+def img_splicing(img1, img2, img3, img4):
+    top_row = np.concatenate([img1, img2], axis=1)
+    bottom_row = np.concatenate([img3, img4], axis=1)
+    final_img = np.concatenate([top_row, bottom_row], axis=0)
+
+    return final_img
+
+
 # return the needed data for training
 # including: x_data -> the image data with numpy array format
 #            y_data -> the corresponding label of the image
@@ -94,9 +123,10 @@ def batch_data_generator(img_folder, batch_size, training_dim, stride):
 # it can be served as 1. a infinite iterator which keeps providing data, each image in the folder will be provided
 #                        before next epoch, the image will be randomly selected (the 'shuffle' argument) in every epoch
 #                     2. a daemon threading data provider, which is preferred and much faster than the iterator
+# * if set splice_train = true, then the output training data's dim will be twice the given value
 class DataProvider:
 
-    def __init__(self, img_folder, batch_size, training_dim, stride, CCPD_origin=False, shuffle=True):
+    def __init__(self, img_folder, batch_size, training_dim, stride, CCPD_origin=False, shuffle=True, splice_train=False):
         self.imgs_paths = read_img_from_dir(img_folder)
         self.batch_size = batch_size
         self.training_dim = training_dim
@@ -105,6 +135,7 @@ class DataProvider:
         self.samples = deque(self.imgs_paths)
         self.CCPD_origin = CCPD_origin
         self.shuffle = shuffle
+        self.splic_train = splice_train
         self.x_data, self.y_data = self.create_buffer(batch_size)
         self.buffer_loaded = False
         self._lock = Lock()
@@ -159,15 +190,37 @@ class DataProvider:
                 y_data = []
 
                 for b in range(self.batch_size):
+                    # print 'now %d samples left' % len(self.samples)
                     if len(self.samples) == 0:
                         self.samples = deque(self.imgs_paths)
                         if shuffle:
                             shuffle(self.samples)
                         break
-                    img_path = self.samples.pop()
-                    x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)) / 255.)
-                    y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
-                                                            self.stride, CCPD_origin=self.CCPD_origin))
+                    if self.splic_train:
+
+                        if len(self.samples) < self.batch_size * 4:
+                            training_dim = self.training_dim * 2
+                            img_path = self.samples.pop()
+                            x_data.append(
+                                cv2.resize(cv2.imread(img_path), (training_dim, training_dim)) / 255.)
+                            y_data.append(CCDP_FR_to_training_label(img_path, training_dim,
+                                                                    self.stride, CCPD_origin=self.CCPD_origin))
+                        else:
+                            img_paths = [self.samples.pop() for _ in range(4)]
+                            imgs = [cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)) / 255.
+                                    for img_path in img_paths]
+                            img_huge = img_splicing(*imgs)
+                            labels = [CCDP_FR_to_training_label(img_path, self.training_dim, self.stride,
+                                      CCPD_origin=self.CCPD_origin) for img_path in img_paths]
+                            label_huge = label_splicing(*labels)
+                            x_data.append(img_huge)
+                            y_data.append(label_huge)
+
+                    elif not self.splic_train:
+                        img_path = self.samples.pop()
+                        x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)) / 255.)
+                        y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
+                                                                self.stride, CCPD_origin=self.CCPD_origin))
 
                 if len(x_data) == 0:
                     return self.load()
@@ -193,6 +246,11 @@ class DataProvider:
             images.append(cv2.imread(sample))
             print 1. * i / len(self.samples)
         return images
+
+
+"""
+label post-processing
+"""
 
 
 # receive the output of the network and map the label to the original image
@@ -256,8 +314,11 @@ def nms(labels, threshold=0.5):
 
 
 if __name__ == '__main__':
-    path = '/home/shaoheng/Documents/cars_label_FRNet/ccpd_dataset/ccpd_base'
-    data_provider = DataProvider(path, 32, 208, 16, CCPD_origin=True)
-    # data_provider.start_loading()
+    path = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746'
+    data_provider = DataProvider(path, 64, 208, 16, CCPD_origin=False, shuffle=True, splice_train=True)
+    data_provider.start_loading()
+    while 1:
+        x, y = data_provider.get_batch()
+        print x.shape
 
 
