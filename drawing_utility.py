@@ -11,13 +11,4 @@ def draw_LP_by_vertices(img, pts):
 
 
 if __name__ == '__main__':
-    dir = '/home/shaoheng/Documents/cars_label_FRNet/CCPD_2019_first_part/0to4370'
-    imgs_paths = read_img_from_dir(dir)
-
-    for img_path in imgs_paths:
-        img = cv2.imread(img_path)
-        vertices = np.array(vertices_info(img_path))
-        img_draw = draw_LP_by_vertices(img, vertices)
-        cv2.imshow('img', img_draw)
-        cv2.moveWindow('img', 0, 0)
-        cv2.waitKey(0)
+    pass

@@ -25,5 +25,4 @@ def FR_vertices_info(img_name):
 
 
 if __name__ == '__main__':
-    img_name = '01-0_1-249&528_393&586-392&584_249&586_250&530_393&528-0_0_25_27_7_26_29-131-21.jpg'
-    vertices = FR_vertices_info()
+    pass

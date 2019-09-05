@@ -93,5 +93,4 @@ def IoU(BB_1, BB_2):
 
 
 if __name__ == '__main__':
-    iou = IoU([[5, 4], [9, 6]], [[5.5, 4.5], [9.5, 6.5]])
-    print iou
+    pass
