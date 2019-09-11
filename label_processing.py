@@ -9,6 +9,7 @@ from random import sample, shuffle
 from collections import deque
 from threading import Thread, Lock
 from time import sleep
+from data_aug import data_aug
 
 
 """
@@ -38,9 +39,9 @@ def mean_size_LP(img_folder, training_dim, total_stride=1):
 # need to give the dimension for training and the total stride in the model
 # label shape -> [y, x, 1 + 2*4], y and x are the downsampled output map size
 # label format -> [object_1or0, x1, y1, x2, y2, x3, y3, x4, y4] pts from bottom right and clockwise
-def CCDP_FR_to_training_label(img_path, training_dim, stride, CCPD_origin=False):
+def CCDP_FR_to_training_label(img_path, training_dim, stride, CCPD_origin=False, side=3.5):
 
-    side = 3.5  # calculated by training_dim = 208 and stride = 16
+    # side = 3.5 calculated by training_dim = 208 and stride = 16 in 746 dataset
     img_shape = cv2.imread(img_path).shape
     out_size = training_dim / stride
 
@@ -77,6 +78,50 @@ def CCDP_FR_to_training_label(img_path, training_dim, stride, CCPD_origin=False)
     return label
 
 
+# batch version of label conversion, with data augmentation!
+def batch_CCPD_to_training_label(img_paths, training_dim, stride, CCPD_origin=False, side=3.5):
+
+    x_labels = []
+    y_labels = []
+    imgs_aug, vertices_aug = data_aug(img_paths, CCPD_origin=CCPD_origin)
+
+    for img_aug, vertice_aug in zip(imgs_aug, vertices_aug):
+        # side = 3.5 calculated by training_dim = 208 and stride = 16 in 746 dataset
+        # side = 16. calculated by training_dim = 256 and stride = 4 in 2333 dataset
+        img_shape = img_aug.shape
+        out_size = training_dim / stride
+
+        assert training_dim % stride == 0, 'training_dim dividing stride must be a integer'
+
+        LP_Cor = np.array(pixel_to_ratio(img_shape, *vertice_aug)) * training_dim
+        LP_BB = np.array(pts_to_BBCor(*LP_Cor))
+
+        LP_Cor_outdim = LP_Cor / stride
+        LP_BB_outdim = [np.maximum(LP_BB[0] / stride, 0).astype(int), np.minimum(LP_BB[1] / stride, out_size).astype(int)]
+        y_label = np.zeros((out_size, out_size, 1 + 2 * 4))
+
+        for y in range(LP_BB_outdim[0][1], LP_BB_outdim[1][1]):
+            for x in range(LP_BB_outdim[0][0], LP_BB_outdim[1][0]):
+
+                now_pixel = np.array([x + 0.5, y + 0.5])
+
+                LP_BB_wh = LP_BB_outdim[1] - LP_BB_outdim[0]
+                same_BB_on_now_pixel = [now_pixel - LP_BB_wh / 2., now_pixel + LP_BB_wh / 2.]
+                iou = IoU(LP_BB_outdim, same_BB_on_now_pixel)
+
+                if iou > 0.5:
+                    LP_Cor_recenter = (np.array(LP_Cor_outdim) - now_pixel) / side
+                    y_label[y, x, 0] = 1
+                    y_label[y, x, 1:] = LP_Cor_recenter.flatten()
+
+        x_label = cv2.resize(img_aug, (training_dim, training_dim)) / 255.  # 255 for normalization
+
+        x_labels.append(x_label)
+        y_labels.append(y_label)
+
+    return x_labels, y_labels
+
+
 # combine the labels of four images and make it a huge training label
 # be sure the label having same training dim and model stride
 def label_splicing(label1, label2, label3, label4):
@@ -101,23 +146,6 @@ def img_splicing(img1, img2, img3, img4):
     return final_img
 
 
-# return the needed data for training
-# including: x_data -> the image data with numpy array format
-#            y_data -> the corresponding label of the image
-def batch_data_generator(img_folder, batch_size, training_dim, stride):
-    assert training_dim % stride == 0, 'training_dim dividing stride must be a integer'
-    output_dim = training_dim / stride
-
-    imgs_path = read_img_from_dir(img_folder)
-    samples = sample(imgs_path, batch_size)
-    x_data = []  # for some reason np.empty met some problems when giving a array from cv2.imread, so use list
-    y_data = np.empty(shape=(batch_size, output_dim, output_dim, 1 + 2 * 4))
-    for i, img_path in enumerate(samples):
-        x_data.append(cv2.resize(cv2.imread(img_path), (training_dim, training_dim)))
-        y_data[i] = CCDP_FR_to_training_label(img_path, training_dim, stride)
-    return np.array(x_data), y_data
-
-
 # the class provides batch training data
 # need to give arguments -> img_folder, batch_size, training_dim, stride
 # it can be served as 1. a infinite iterator which keeps providing data, each image in the folder will be provided
@@ -126,7 +154,8 @@ def batch_data_generator(img_folder, batch_size, training_dim, stride):
 # * if set splice_train = true, then the output training data's dim will be twice the given value
 class DataProvider:
 
-    def __init__(self, img_folder, batch_size, training_dim, stride, CCPD_origin=False, shuffle=True, splice_train=False):
+    def __init__(self, img_folder, batch_size, training_dim, stride, CCPD_origin=False,
+                 shuffle=True, splice_train=False, side=3.5):
         self.imgs_paths = read_img_from_dir(img_folder)
         self.batch_size = batch_size
         self.training_dim = training_dim
@@ -135,12 +164,13 @@ class DataProvider:
         self.samples = deque(self.imgs_paths)
         self.CCPD_origin = CCPD_origin
         self.shuffle = shuffle
-        self.splic_train = splice_train
+        self.splice_train = splice_train
         self.x_data, self.y_data = self.create_buffer(batch_size)
         self.buffer_loaded = False
         self._lock = Lock()
         self.thread = Thread()
         self.stop_buffer = False
+        self.side = side
 
     def __iter__(self):
         if shuffle:
@@ -160,7 +190,7 @@ class DataProvider:
             img_path = self.samples.pop()
             x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)))
             y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
-                                                    self.stride, CCPD_origin=self.CCPD_origin))
+                                                    self.stride, CCPD_origin=self.CCPD_origin, side=self.side))
 
         if len(x_data) == 0:
             return self.next()
@@ -186,9 +216,7 @@ class DataProvider:
                 if self.stop_buffer:
                     return 0
             with self._lock:
-                x_data = []
-                y_data = []
-
+                img_paths = []
                 for b in range(self.batch_size):
                     # print 'now %d samples left' % len(self.samples)
                     if len(self.samples) == 0:
@@ -196,40 +224,17 @@ class DataProvider:
                         if shuffle:
                             shuffle(self.samples)
                         break
-                    if self.splic_train:
+                    img_paths.append(self.samples.pop())
 
-                        if len(self.samples) < self.batch_size * 4:
-                            training_dim = self.training_dim * 2
-                            img_path = self.samples.pop()
-                            x_data.append(
-                                cv2.resize(cv2.imread(img_path), (training_dim, training_dim)) / 255.)
-                            y_data.append(CCDP_FR_to_training_label(img_path, training_dim,
-                                                                    self.stride, CCPD_origin=self.CCPD_origin))
-                        else:
-                            img_paths = [self.samples.pop() for _ in range(4)]
-                            imgs = [cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)) / 255.
-                                    for img_path in img_paths]
-                            img_huge = img_splicing(*imgs)
-                            labels = [CCDP_FR_to_training_label(img_path, self.training_dim, self.stride,
-                                      CCPD_origin=self.CCPD_origin) for img_path in img_paths]
-                            label_huge = label_splicing(*labels)
-                            x_data.append(img_huge)
-                            y_data.append(label_huge)
-
-                    elif not self.splic_train:
-                        img_path = self.samples.pop()
-                        x_data.append(cv2.resize(cv2.imread(img_path), (self.training_dim, self.training_dim)) / 255.)
-                        y_data.append(CCDP_FR_to_training_label(img_path, self.training_dim,
-                                                                self.stride, CCPD_origin=self.CCPD_origin))
-
-                if len(x_data) == 0:
+                if len(img_paths) == 0:
                     return self.load()
-                else:
-                    self.x_data = np.array(x_data)
-                    self.y_data = np.array(y_data)
 
-                    self.buffer_loaded = True
-                    print 'loading batch image to buffer... done!'
+                x_data, y_data = batch_CCPD_to_training_label(img_paths, self.training_dim, self.stride,
+                                                              CCPD_origin=self.CCPD_origin, side=self.side)
+                self.x_data = np.array(x_data)
+                self.y_data = np.array(y_data)
+                self.buffer_loaded = True
+                print 'loading batch image to buffer... done!'
 
     def start_loading(self):
         self.thread = Thread(target=self.load)
@@ -256,8 +261,8 @@ label post-processing
 # receive the output of the network and map the label to the original image
 # now this function only work with single image prediction label
 # in each label -> [prob, cor_after_affine]
-def predicted_label_to_origin_image(ori_image_shape, label, stride, prob_threshold=0.9, use_nms=True):
-    side = 3.5
+def predicted_label_to_origin_image(ori_image_shape, label, stride, prob_threshold=0.9, use_nms=True, side=3.5):
+    # side = 3.5 calculated by training_dim = 208 and stride = 16
 
     out_w = label.shape[1]
     out_h = label.shape[0]
@@ -307,18 +312,22 @@ def nms(labels, threshold=0.5):
     labels_nms = []
     while len(labels) > 0:
         now_handle = labels.popleft()
-        while len(labels) > 0 and IoU(pts_to_BBCor(*now_handle[1]), pts_to_BBCor(*labels[0][1])) > threshold:
-            labels.popleft()
-        labels_nms.append(now_handle)
+        overlap = False
+        for label_nms in labels_nms:
+            if IoU(pts_to_BBCor(*now_handle[1]), pts_to_BBCor(*label_nms[1])) > threshold:
+                overlap = True
+                break
+        if not overlap:
+            labels_nms.append(now_handle)
     return labels_nms
 
 
 if __name__ == '__main__':
     path = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_total746'
-    data_provider = DataProvider(path, 64, 208, 16, CCPD_origin=False, shuffle=True, splice_train=True)
-    data_provider.start_loading()
+    data_generator = DataProvider(path, 32, 256, 4, side=16.)
+    data_generator.start_loading()
     while 1:
-        x, y = data_provider.get_batch()
-        print x.shape
+        x, y = data_generator.get_batch()
+        print np.shape(y)
 
 
