@@ -12,6 +12,16 @@ def pts_to_BBCor(pt1, pt2, pt3, pt4):
     return [[x_min, y_min], [x_max, y_max]]
 
 
+# pt1 -> tl, pt2 -> br
+# return pt1~pt4 from br and clockwise in format [x, y]
+def BBCor_to_pts(pt1, pt2):
+    x_min = pt1[0]
+    x_max = pt2[0]
+    y_min = pt1[1]
+    y_max = pt2[1]
+    return [[x_max, y_max], [x_min, y_max], [x_min, y_min], [x_max, y_min]]
+
+
 # cut the img into a rectangle when having four vertices
 # img -> numpy array, pt1~pt4 -> tuple or list with format (x, y)
 def cut_by_fourpts(img, pt1, pt2, pt3, pt4):

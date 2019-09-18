@@ -1,7 +1,7 @@
 import numpy as np
 from shutil import copy
 from img_utility import read_img_from_dir
-from CCPD_utility import vertices_info
+from dataset_utility import CCPD_vertices_info
 
 # return the horizontal and vertical rotation degree of a LP by giving its four vertices
 # vertices format -> [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] from br and clockwise
@@ -29,7 +29,7 @@ def rotation_degrees(pt1, pt2, pt3, pt4):
 # to the output_folder
 def pick_range_of_angle(img_folder, output_folder, hor_degree_threshold, ver_degree_threshold):
     for img_path in read_img_from_dir(img_folder):
-        vertices = vertices_info(img_path)
+        vertices = CCPD_vertices_info(img_path)
         hor_angle, ver_angle = rotation_degrees(*vertices)
 
         if abs(hor_angle) > hor_degree_threshold or abs(ver_angle - 90) > ver_degree_threshold:

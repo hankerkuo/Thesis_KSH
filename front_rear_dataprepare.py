@@ -2,16 +2,16 @@
 this script is used to cut the CCPD image files into FR part with corresponding vertices information
 just need to give the input image directory and output directory
 """
-from CCPD_utility import vertices_info
+from dataset_utility import CCPD_vertices_info, openALPR_BBCor_info, CCPD_FR_vertices_info
 from yolo_utility import yolo_readline, yolo_to_BBCor
-from img_utility import cut_by_BBCor, read_img_from_dir, cor_sys_trans
+from img_utility import cut_by_BBCor, read_img_from_dir, cor_sys_trans, BBCor_to_pts
 import cv2
 import numpy as np
 from os.path import basename, join, isfile
 
 if __name__ == '__main__':
-    output_dir = 'training_data/CCPD_FR_total'
-    input_dir = '/home/shaoheng/Documents/cars_label_FRNet/CCPD_2019_first_part/0to4370'
+    output_dir = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_tilt'
+    input_dir = '/home/shaoheng/Documents/cars_label_FRNet/CCPD_2019_first_part/rotandtilt_2000'
 
     img_paths = read_img_from_dir(input_dir)
     print 'reading all image file paths from input dir done'
@@ -29,8 +29,9 @@ if __name__ == '__main__':
         BBCor = yolo_to_BBCor(np.shape(img), *yolo_readline(txt_path))
         FR_img = cut_by_BBCor(img, *BBCor)
 
-        LP_vertices = vertices_info(basename(img_path))
+        LP_vertices = CCPD_vertices_info(basename(img_path))
         LP_vertices = cor_sys_trans(BBCor[0], *LP_vertices)
+
         file_name = ''
         # make the file name format similar to CCPD files
         for i, vertex in enumerate(LP_vertices):

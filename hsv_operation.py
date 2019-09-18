@@ -1,6 +1,6 @@
 import cv2
 from img_utility import read_img_from_dir, cut_by_fourpts
-from CCPD_utility import FR_vertices_info, vertices_info
+from dataset_utility import CCPD_FR_vertices_info, CCPD_vertices_info
 import numpy as np
 
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     for img_path in imgs_paths:
         img = cv2.imread(img_path)
-        LP_part = vertices_info(img_path)
+        LP_part = CCPD_vertices_info(img_path)
         img_LP = cut_by_fourpts(img, *LP_part)
         img_after_seg = hsv_segmentation(img, hsv_lower, hsv_upper)
 
