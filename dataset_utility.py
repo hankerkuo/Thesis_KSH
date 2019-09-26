@@ -1,30 +1,32 @@
 from os.path import basename, splitext
+from img_utility import BBCor_to_pts, vertices_rearange
 import cv2
+import json
 
 # return a list of BB coordinates [[x1, y1], [x2, y2]]
-def CCPD_BBCor_info(img_name):
-    img_name = basename(img_name)
-    BBCor = img_name.split('-')[2].split('_')
+def CCPD_BBCor_info(img_path):
+    img_path = basename(img_path)
+    BBCor = img_path.split('-')[2].split('_')
     return [map(int, BBCor[0].split('&')), map(int, BBCor[1].split('&'))]
 
 
 # return a list of vertices coordinates [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
-def CCPD_vertices_info(img_name):
-    img_name = basename(img_name)
-    vertices = img_name.split('-')[3].split('_')
+def CCPD_vertices_info(img_path):
+    img_path = basename(img_path)
+    vertices = img_path.split('-')[3].split('_')
     return [map(int, vertices[0].split('&')), map(int, vertices[1].split('&')),
             map(int, vertices[2].split('&')), map(int, vertices[3].split('&'))]
 
 
 # used for the CCPD_FR training data, read the LP vertices [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
-def CCPD_FR_vertices_info(img_name):
-    img_name = basename(img_name)
-    vertices = img_name.split('.')[0].split('_')
+def CCPD_FR_vertices_info(img_path):
+    img_path = basename(img_path)
+    vertices = img_path.split('.')[0].split('_')
     return [map(int, vertices[0].split('&')), map(int, vertices[1].split('&')),
             map(int, vertices[2].split('&')), map(int, vertices[3].split('&'))]
 
 
-# return the boudning box for front and rear for CCPD_FR format
+# return the vertices for front and rear for CCPD_FR format [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
 def CCPD_FR_front_rear_info(img_path):
     shape = cv2.imread(img_path).shape
     w = shape[1]
@@ -47,7 +49,54 @@ def openALPR_BBCor_info(img_path):
         return [[x_min, y_min], [x_max, y_max]]
 
 
+# [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+def vernex_front_rear_info(img_path):
+    img_name = basename(img_path)
+    vertices = img_name.split('.')[0].split('_')
+    return [map(int, vertices[4].split('&')), map(int, vertices[5].split('&')),
+            map(int, vertices[6].split('&')), map(int, vertices[7].split('&'))]
+
+
+# [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+def vernex_vertices_info(img_path):
+    img_name = basename(img_path)
+    vertices = img_name.split('.')[0].split('_')
+    return [map(int, vertices[0].split('&')), map(int, vertices[1].split('&')),
+            map(int, vertices[2].split('&')), map(int, vertices[3].split('&'))]
+
+
+def vernex_fr_class_info(img_path):
+    img_name = basename(img_path)
+    ele = img_name.split('.')[0].split('_')
+    return ele[8]
+
+
+# read the json file including lp and fr annotations
+# it will return the lp and fr coordinate start at br and clock-wise
+# return -> w, h, class, {vertices indexed by 'fr' or 'front' or 'rear'}
+def json_lp_fr(json_path):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    weight = data['imageWidth']
+    height = data['imageHeight']
+    lp_fr_vertices = {}
+    for annotation in data['shapes']:
+        if annotation['shape_type'] == 'rectangle':
+            pts = BBCor_to_pts(*[map(int, pt) for pt in annotation['points']])
+        elif annotation['shape_type'] == 'polygon':
+            pts = vertices_rearange([map(int, pt) for pt in annotation['points']])
+        lp_fr_vertices[annotation['label']] = pts
+        if annotation['label'] in ['front', 'rear']:
+            cls = annotation['label']
+
+    assert len(lp_fr_vertices) == 2, 'data set length not matched, please check the data'
+    assert 'lp' in lp_fr_vertices and ('front' in lp_fr_vertices or 'rear' in lp_fr_vertices),\
+           'Now this function is only supported for one-lp and one-fr'
+
+    return weight, height, cls, lp_fr_vertices
+
+
 if __name__ == '__main__':
-    path = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR/122&172_35&162_32&116_119&126.jpg'
-    print CCPD_FR_front_rear_info(path)
-    pass
+    path = '/home/shaoheng/Documents/Thesis_KSH/training_data/cd_hard/05344.json'
+    w, h, cls, lp_fr = json_lp_fr(path)
+    print w, h, cls, lp_fr
