@@ -12,13 +12,13 @@ def pts_to_BBCor(pt1, pt2, pt3, pt4):
     return [[x_min, y_min], [x_max, y_max]]
 
 
-# pt1 -> tl, pt2 -> br
+# pt1 -> tl, pt2 -> br (not necessary, bl and tr also fine)
 # return pt1~pt4 from br and clockwise in format [x, y]
 def BBCor_to_pts(pt1, pt2):
-    x_min = pt1[0]
-    x_max = pt2[0]
-    y_min = pt1[1]
-    y_max = pt2[1]
+    x_min = min(pt1[0], pt2[0])
+    x_max = max(pt1[0], pt2[0])
+    y_min = min(pt1[1], pt2[1])
+    y_max = max(pt1[1], pt2[1])
     return [[x_max, y_max], [x_min, y_max], [x_min, y_min], [x_max, y_min]]
 
 
@@ -47,6 +47,16 @@ def cor_sys_trans(reference_pt, *pts):
     for pt in pts:
         pts_modified.append([pt[0] - reference_pt[0], pt[1] - reference_pt[1]])
     return pts_modified
+
+
+# re-arange the four points into: from br and clock-wise
+# pts format -> [pt1, pt2, pt3, pt4], pt -> [x, y]
+def vertices_rearange(pts):
+    pts = sorted(pts, key=lambda x: x[0])
+    left, right = pts[0:2], pts[2:4]
+    tl, bl = sorted(left, key=lambda x: x[1])
+    tr, br = sorted(right, key=lambda x: x[1])
+    return [br, bl, tl, tr]
 
 
 # transfer the pixel-based points information to ratio-based
@@ -88,14 +98,23 @@ def area_by_tl_br(tl, br):
 def IoU(BB_1, BB_2):
     xs = [BB_1[0][0], BB_1[1][0], BB_2[0][0], BB_2[1][0]]
     ys = [BB_1[0][1], BB_1[1][1], BB_2[0][1], BB_2[1][1]]
+    BB_1_width, BB_2_width = xs[1] - xs[0], xs[3] - xs[2]
+    BB_1_height, BB_2_height = ys[1] - ys[0], ys[3] - ys[2]
     xs.sort()
     ys.sort()
 
-    intersec_tl_br = [[xs[1], ys[1]], [xs[2], ys[2]]]  # intersection will be the middle two values (for both x and y)
     union_tl_br = [[xs[0], ys[0]], [xs[3], ys[3]]]  # union will be the smallest and largest value
+    # first situation, no intersection, return 0
+    if union_tl_br[1][0] - union_tl_br[0][0] > BB_1_width + BB_2_width or \
+       union_tl_br[1][1] - union_tl_br[0][1] > BB_1_height + BB_2_height:
+        return 0
 
+    # second situation, having intersection, calculate them
+    intersec_tl_br = [[xs[1], ys[1]], [xs[2], ys[2]]]  # intersection will be the middle two values (for both x and y)
     area_intersec = float(area_by_tl_br(*intersec_tl_br))
     area_union = float(area_by_tl_br(*union_tl_br))
+
+    # exception handle, to avoid the denominator to be zero
     if area_union == 0:
         return 0
     else:
