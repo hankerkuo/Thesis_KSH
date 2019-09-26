@@ -176,13 +176,15 @@ def create_heads(prelayerfeatures, rf1, num_classes, hgid, num_channels):
     # for head as intermediate supervision, use 'linear' as activation.
     head_parts = Conv2D(num_channels, kernel_size=(1, 1), activation='linear', padding='same',
                         name=str(hgid) + '_conv_1x1_parts')(head)
-    head_lpd_prob = Conv2D(2, kernel_size=(3, 3), activation='softmax', padding='same',
+    head_lpd_prob = Conv2D(1, kernel_size=(3, 3), activation='sigmoid', padding='same',
                              name=str(hgid) + '_conv_3x3_prob')(head)
     head_lp_vertex = Conv2D(8, kernel_size=(3, 3), activation='linear', padding='same',
                              name=str(hgid) + '_conv_3x3_lp_vertex')(head)
     head_fr_vertex = Conv2D(8, kernel_size=(3, 3), activation='linear', padding='same',
                              name=str(hgid) + '_conv_3x3_fr_vertex')(head)
-    head_lpd = Concatenate(3)([head_lpd_prob, head_lp_vertex, head_fr_vertex])
+    head_fr_class = Conv2D(3, kernel_size=(3, 3), activation='softmax', padding='same',
+                             name=str(hgid) + '_conv_3x3_fr_class')(head)
+    head_lpd = Concatenate(3)([head_lpd_prob, head_lp_vertex, head_fr_vertex, head_fr_class])
 
     # use linear activation
     head = Conv2D(num_channels, kernel_size=(1, 1), activation='linear', padding='same',

@@ -17,19 +17,19 @@ def model_and_loss():
         loss = loss_WPOD
     elif c.model_code == 'Hourglass+WPOD':
         model = create_hourglass_network_WPOD(None, num_stacks=2, num_channels=256,
-                                              inres=(c.training_dim, c.training_dim),
+                                              inres=(c.training_dim_1, c.training_dim_1),
                                               outres=(c.out_dim, c.out_dim),
                                               bottleneck=bottleneck_block)
         loss = loss_WPOD
     elif c.model_code == 'Hourglass+Vernex_lp':
         model = create_hourglass_network_vernex_lp(None, num_stacks=2, num_channels=256,
-                                                   inres=(c.training_dim, c.training_dim),
+                                                   inres=(c.training_dim_1, c.training_dim_1),
                                                    outres=(c.out_dim, c.out_dim),
                                                    bottleneck=bottleneck_block)
         loss = loss_Vernex_lp
     elif c.model_code == 'Hourglass+Vernex_lpfr':
         model = create_hourglass_network_vernex_lpfr(None, num_stacks=2, num_channels=256,
-                                                     inres=(c.training_dim, c.training_dim),
+                                                     inres=(c.training_dim_1, c.training_dim_1),
                                                      outres=(c.out_dim, c.out_dim),
                                                      bottleneck=bottleneck_block)
         loss = loss_Vernex_lpfr
