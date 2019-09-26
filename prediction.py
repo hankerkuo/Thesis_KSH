@@ -1,8 +1,10 @@
 from label_processing import predicted_label_to_origin_image_WPOD, predicted_label_to_origin_image_Vernex_lp
-from img_utility import read_img_from_dir
-from os.path import join, basename, isdir
+from label_processing import predicted_label_to_origin_image_Vernex_lpfr
+from img_utility import read_img_from_dir, vertices_rearange
+from os.path import join, basename, isdir, splitext
 from os import mkdir
-from drawing_utility import draw_LP_by_vertices
+from drawing_utility import draw_LP_by_vertices, draw_FR_color_by_class
+from geometry_calc import planar_rectification
 from config import Configs
 from model_define import model_and_loss
 import numpy as np
@@ -14,10 +16,10 @@ import cv2
 def single_img_predict(img, input_dim=(0, 0), input_norm=True, model_code=''):
     if model_code in ['WPOD+WPOD', 'Hourglass+WPOD']:
         label_to_origin = predicted_label_to_origin_image_WPOD
-    elif model_code == 'Hourglass+Vernex_lp':
+    elif model_code in ['Hourglass+Vernex_lp']:
         label_to_origin = predicted_label_to_origin_image_Vernex_lp
-    elif model_code == 'Hourglass+Vernex_lpfr':
-        pass
+    elif model_code in ['Hourglass+Vernex_lpfr']:
+        label_to_origin = predicted_label_to_origin_image_Vernex_lpfr
 
     img_shape = img.shape
     if input_norm:
@@ -53,22 +55,30 @@ if __name__ == '__main__':
 
         if len(final_labels) == 0:
             print 'fail to detect'
-            continue
-
-        print '%d LPs found' % len(final_labels)
+        else:
+            print '%d LPs found' % len(final_labels)
 
         img = cv2.imread(img_path)
 
         for i, final_label in enumerate(final_labels[:c.LPs_to_find]):
-            prob, vertices = final_label
-            try:
-                img = draw_LP_by_vertices(img, vertices)
-            except:
-                print '%d LP area cutting failed' % i
-                continue
+
+            prob, vertices_lp = final_label[:2]
+            vertices_lp = vertices_rearange(vertices_lp)
+
+            # save each license plate
+            lp_img = planar_rectification(img, vertices_lp)
+            cv2.imwrite(join(c.output_dir, splitext(basename(img_path))[0] + '_%d' % i + '.jpg'), lp_img)
+
+            # draw visualization results
+            img = draw_LP_by_vertices(img, vertices_lp)
+            # if it's lpfr model, then draw front and rear
+            if c.model_code in ['Hourglass+Vernex_lpfr']:
+                vertices_fr = final_label[2]
+                fr_class, class_prob = final_label[3]
+                img = draw_FR_color_by_class(img, prob, vertices_fr, fr_class, class_prob)
 
         cv2.imwrite(join(c.output_dir, basename(img_path)), img)
-        print 'write', join(c.output_dir, basename(img_path))
+        print 'write to:', join(c.output_dir, basename(img_path))
 
 
 
