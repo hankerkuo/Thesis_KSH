@@ -1,8 +1,8 @@
 from label_processing import predicted_label_to_origin_image_WPOD, predicted_label_to_origin_image_Vernex_lp
 from label_processing import predicted_label_to_origin_image_Vernex_lpfr
 from img_utility import read_img_from_dir, vertices_rearange
-from os.path import join, basename, isdir, splitext
-from os import mkdir
+from os.path import join, basename, isdir, splitext, isfile
+from os import mkdir, remove
 from drawing_utility import draw_LP_by_vertices, draw_FR_color_by_class
 from geometry_calc import planar_rectification
 from config import Configs
@@ -10,11 +10,12 @@ from model_define import model_and_loss
 from time import time
 import numpy as np
 import cv2
+import json
 
 
 # for testing SINGLE image
-# return a list of possible license plates, in each label -> [prob, vertex_predicted_lp,
-#                              in 'lpfr', additional info -> vertex_predicted_fr, [fr_class, class_prob]]
+# return a list of possible license plates, in each label -> [prob, np.array(vertex_predicted_lp),
+#                              in 'lpfr', additional info -> np.array(vertex_predicted_fr), [fr_class, class_prob]]
 def single_img_predict(img_path, input_dim=(0, 0), input_norm=True, model_code=''):
     if model_code in ['WPOD+WPOD', 'Hourglass+WPOD']:
         label_to_origin = predicted_label_to_origin_image_WPOD
@@ -68,13 +69,16 @@ if __name__ == '__main__':
 
         img = cv2.imread(img_path)
 
+        infos = {'lps': []}
+
         for i, final_label in enumerate(final_labels[:c.LPs_to_find]):
 
             prob, vertices_lp = final_label[:2]
+            vertices_lp = vertices_lp.tolist()
             vertices_lp = vertices_rearange(vertices_lp)
 
             # save each license plate
-            '''
+            ''''
             lp_img = planar_rectification(img, vertices_lp)
             cv2.imwrite(join(c.output_dir, splitext(basename(img_path))[0] + '_%d' % i + '.jpg'), lp_img)
             '''
@@ -83,9 +87,21 @@ if __name__ == '__main__':
             img = draw_LP_by_vertices(img, vertices_lp)
             # if it's lpfr model, then draw front and rear
             if c.model_code in ['Hourglass+Vernex_lpfr']:
-                vertices_fr = final_label[2]
+                vertices_fr = final_label[2].tolist()
                 fr_class, class_prob = final_label[3]
                 img = draw_FR_color_by_class(img, prob, vertices_fr, fr_class, class_prob)
+
+                # add output results in order to save into json file
+                infos['lps'].append({'lp_prob': float(prob), 'vertices_lp': vertices_lp, 'vertices_fr': vertices_fr,
+                                     'fr_class': fr_class, 'class_prob': float(class_prob)})
+
+        '''
+        save result for mAP calculation'''
+        json_path = join(c.output_dir, splitext(basename(img_path))[0] + '_result.json')
+        if isfile(json_path):
+            remove(json_path)
+        with open(json_path, 'a+') as f:
+            json.dump(infos, f)
 
         cv2.imwrite(join(c.output_dir, basename(img_path)), img)
         print 'write to:', join(c.output_dir, basename(img_path))
