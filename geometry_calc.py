@@ -50,13 +50,24 @@ def planar_rectification(img, vertices, width=400, height=100):
 
 
 # the polygon iou of between a polygon and the same polygon on a specific point
-def polygon_iou(polygon_vertices, pt):
+def polygon_pt_iou(polygon_vertices, pt):
     polygon_vertices = np.array(polygon_vertices)
     poly_1 = Polygon([tuple(vertice) for vertice in polygon_vertices])
     centroid = np.array(poly_1.centroid)
 
     poly_on_pt = polygon_vertices + np.array(pt) - centroid
     poly_2 = Polygon([tuple(vertice) for vertice in poly_on_pt])
+
+    return poly_1.intersection(poly_2).area / poly_1.union(poly_2).area
+
+
+# return the ios value of two polygon
+# polygon_vertices format -> [[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+def polygons_iou(polygon1_vertices, polygon2_vertices):
+    polygon1_vertices = np.array(polygon1_vertices)
+    polygon2_vertices = np.array(polygon2_vertices)
+    poly_1 = Polygon([tuple(vertice) for vertice in polygon1_vertices])
+    poly_2 = Polygon([tuple(vertice) for vertice in polygon2_vertices])
 
     return poly_1.intersection(poly_2).area / poly_1.union(poly_2).area
 

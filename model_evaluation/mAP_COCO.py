@@ -7,8 +7,8 @@ import traceback
 import matplotlib.pyplot as plt
 
 
-def coco_mAP_vernex(valid_data_folder, iou_threshold, classify_cal=True):
-    data_val_folder = valid_data_folder
+def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):
+    data_val_folder = output_result_folder
     imgs_paths_val = read_img_from_dir(data_val_folder)
     total_gt = len(imgs_paths_val)
     class_dict = {'front': 1, 'rear': 2}
@@ -29,19 +29,24 @@ def coco_mAP_vernex(valid_data_folder, iou_threshold, classify_cal=True):
         for lp in data['lps']:
 
             true_or_false = False  # true positive or false positive
-            if polygons_iou(lp['vertices_lp'], vertices_lp_gt) >= iou_threshold:
-            # if IoU(pts_to_BBCor(*lp['vertices_lp']), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
-                true_or_false = True
+            try:
+                if polygons_iou(lp['vertices_lp'], vertices_lp_gt) >= iou_threshold:
+                # if IoU(pts_to_BBCor(*lp['vertices_lp']), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                    true_or_false = True
+            except:
+                # traceback.print_exc()
+                if IoU(pts_to_BBCor(*lp['vertices_lp']), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                    true_or_false = True
 
-                if classify_cal:
-                    classify = False
-                    if class_dict[fr_class] == lp['fr_class']:
-                        classify = True
-                    try:
-                        fr_results.append([classify, polygons_iou(lp['vertices_fr'], vertices_fr_gt)])
-                    except:
-                        traceback.print_exc()
-                        fr_results.append([classify, 0])
+            if true_or_false and classify_cal:
+                classify = False
+                if class_dict[fr_class] == lp['fr_class']:
+                    classify = True
+                try:
+                    fr_results.append([classify, polygons_iou(lp['vertices_fr'], vertices_fr_gt)])
+                except:
+                    # traceback.print_exc()
+                    fr_results.append([classify, 0])
 
             lp_results.append([lp['lp_prob'], true_or_false])
 
@@ -96,8 +101,8 @@ def coco_mAP_vernex(valid_data_folder, iou_threshold, classify_cal=True):
     precision = precision / 101.
 
     # to calculate the classification precision
-    class_precision, average_iou = None, None
-    if classify_cal:
+    class_precision, average_iou = 0., 0.
+    if classify_cal and fr_results:
         true_classification = 0.
         total_iou = 0.
         for fr_result in fr_results:
@@ -117,18 +122,18 @@ def coco_mAP_vernex(valid_data_folder, iou_threshold, classify_cal=True):
 
 
 if __name__ == '__main__':
-    valid_data_folder = '/home/shaoheng/Documents/Thesis_KSH/output_results/cd_hard_vernex'
+    output_result_folder = '/home/shaoheng/Documents/Thesis_KSH/output_results/cd_hard_vernex'
 
     # coco mAP
     mAP = 0.
     for threshold in range(50, 100, 5):
-        mAP += coco_mAP_vernex(valid_data_folder, threshold / 100., classify_cal=False)[0]
+        mAP += coco_mAP_vernex(output_result_folder, threshold / 100., classify_cal=False)[0]
     mAP = mAP / 10
 
     # coco mAP50
-    coco_map_50, class_accuracy, iou_front_rear = coco_mAP_vernex(valid_data_folder, 0.5, classify_cal=True)
+    coco_map_50, class_accuracy, iou_front_rear = coco_mAP_vernex(output_result_folder, 0.5, classify_cal=True)
     # coco mAP75
-    coco_map_75 = coco_mAP_vernex(valid_data_folder, 0.75, classify_cal=False)[0]
+    coco_map_75 = coco_mAP_vernex(output_result_folder, 0.75, classify_cal=False)[0]
 
     print 'COCO mAP:', '%.1f' % (mAP * 100)
     print 'COCO mAP50:', '%.1f' % (coco_map_50 * 100)
