@@ -23,13 +23,13 @@ class Configs:
         self.side = 1.
         self.mixing_train = True
         self.training_data_folder = '/home/shaoheng/Documents/Thesis_KSH/training_data/vernex'
-        self.saving_folder = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/vernex_lpfr_fr_aux_class'
+        self.saving_folder = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/final_train'
         """Weight loading"""
-        self.load_weight = True
-        self.iteration_to_load = 517000
+        self.load_weight = False
+        self.iteration_to_load = 0
         """Transfer learning"""
-        self.transfer_learning = False
-        self.transfer_weight = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/maximun_please/ini-Dim256It170000Bsize16Lr0.00025.h5'
+        self.transfer_learning = True
+        self.transfer_weight = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/final_train/ini_Dim256It598000Bsize16Lr0.00025.h5'
 
         """Testing configs"""
         self.prob_threshold = 0.3
@@ -37,7 +37,15 @@ class Configs:
         self.input_norm = True
         self.test_input_dim = (512, 512)
         self.LPs_to_find = 10
-        self.weight = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/vernex_lpfr_fr_aux_class/Dim256It517000Bsize16Lr0.00025.h5'
-        self.input_dir = '/home/shaoheng/Documents/Thesis_KSH/samples/cn'
-        self.output_dir = '/home/shaoheng/Documents/Thesis_KSH/output_results/cn'
+        self.weight = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/vernex_lpfr_fr_aux_class/Dim256It598000Bsize16Lr0.00025.h5'
+        self.input_dir = '/home/shaoheng/Documents/Thesis_KSH/benchmark/cd_hard_vernex'
+        self.output_dir = '/home/shaoheng/Documents/Thesis_KSH/output_results/cd_hard_vernex'
+
+        """Metric configs"""
+        self.info_saving_folder = '/home/shaoheng/Documents/Thesis_KSH/benchmark/mAP_weights/final'  # MOST IMPORTANT
+        self.weight_folder_to_eval = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/final_train'  # SINGLE
+        self.valid_data_folder = '/home/shaoheng/Documents/Thesis_KSH/benchmark/cd_hard_vernex'
+        self.temp_outout_folder = '/home/shaoheng/Documents/Thesis_KSH/benchmark/output_results/cd_hard_vernex'
+
+
 
