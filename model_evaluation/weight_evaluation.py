@@ -14,7 +14,10 @@ from label_processing import predicted_label_to_origin_image_WPOD, predicted_lab
 from label_processing import predicted_label_to_origin_image_Vernex_lpfr
 
 
-def single_img_predict(img_path, input_dim=(0, 0), input_norm=True, model_code=''):
+def single_img_predict(model, img_path, input_dim=(0, 0), input_norm=True, model_code=''):
+
+    c = Configs()
+
     if model_code in ['WPOD+WPOD', 'Hourglass+WPOD']:
         label_to_origin = predicted_label_to_origin_image_WPOD
     elif model_code in ['Hourglass+Vernex_lp']:
@@ -41,19 +44,20 @@ def single_img_predict(img_path, input_dim=(0, 0), input_norm=True, model_code='
     return final_labels, time_spent
 
 
-c = Configs()
-model = model_and_loss()[0]
+def test_on_benchmark(model, weight_name, weight_folder, load_weight=True):
 
-for weight in listdir(c.weight_folder):
-    if splitext(weight)[1] not in ['.h5']:
-        print weight, 'skipped'
-        continue
-    if isfile(join(c.info_saving_folder, splitext(weight)[0] + '.txt')):
-        print splitext(weight)[0] + '.txt', 'existed already, skipped'
-        continue
+    c = Configs()
 
-    print 'loading weight:', weight
-    model.load_weights(join(c.weight_folder, weight))
+    if splitext(weight_name)[1] not in ['.h5']:
+        print weight_name, 'skipped'
+        return 0
+    if isfile(join(c.info_saving_folder, splitext(weight_name)[0] + '.txt')):
+        print splitext(weight_name)[0] + '.txt', 'existed already, skipped'
+        return 0
+
+    if load_weight:
+        print 'loading weight:', weight_name
+        model.load_weights(join(weight_folder, weight_name))
 
     if not isdir(c.temp_outout_folder):
         mkdir(c.temp_outout_folder)
@@ -61,10 +65,10 @@ for weight in listdir(c.weight_folder):
     imgs_paths = read_img_from_dir(c.valid_data_folder)
     time_spent = 0
 
-    print 'processing image results ...'
+    print 'processing benchmark image results ...'
     for img_path in imgs_paths:
 
-        final_labels, sec = single_img_predict(img_path=img_path, input_dim=c.test_input_dim,
+        final_labels, sec = single_img_predict(model=model, img_path=img_path, input_dim=c.test_input_dim,
                                                input_norm=c.input_norm, model_code=c.model_code)
 
         time_spent += sec
@@ -126,12 +130,20 @@ for weight in listdir(c.weight_folder):
     print '\tclassification accuracy:', '%.1f' % (class_accuracy * 100)
     print '\taverage iou for front-rear', '%.1f' % (iou_front_rear * 100)
 
-    with open(join(c.info_saving_folder, splitext(weight)[0] + '.txt'), 'w+') as f:
+    with open(join(c.info_saving_folder, splitext(weight_name)[0] + '.txt'), 'w+') as f:
         f.writelines(['COCO mAP:', '%.1f\n' % (mAP * 100),
                       'COCO mAP50:', '%.1f\n' % (coco_map_50 * 100),
                       'COCO mAP75:', '%.1f\n' % (coco_map_75 * 100),
                       'classification accuracy:', '%.1f\n' % (class_accuracy * 100),
                       'average iou for front-rear:', '%.1f\n' % (iou_front_rear * 100)])
+
+
+if __name__ == '__main__':
+    c = Configs()
+    model = model_and_loss()[0]
+
+    for weight in listdir(c.weight_folder_to_eval):
+        test_on_benchmark(model=model, weight_name=weight, weight_folder=c.weight_folder_to_eval)
 
 
 
