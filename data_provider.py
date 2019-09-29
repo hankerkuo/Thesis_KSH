@@ -38,7 +38,6 @@ class DataProvider:
         self.thread = Thread()
         self.stop_buffer = False
         self.imgs_paths = []
-        self.renew_img_paths()
         self.samples = deque(self.imgs_paths)
         '''MODEL, in ['Hourglass+Vernex_lpfr', 'Hourglass+Vernex_lp', 'Hourglass+WPOD', 'WPOD+WPOD']'''
         if model_code in ['Hourglass+Vernex_lp', 'Hourglass+WPOD', 'WPOD+WPOD']:
@@ -87,7 +86,7 @@ class DataProvider:
             '''
             vernex_origin = read_img_from_dir('/home/shaoheng/Documents/Thesis_KSH/training_data/vernex')
             kr_tilt_vernex = read_img_from_dir('/home/shaoheng/Documents/Thesis_KSH/training_data/kr_tilt_vernex')
-            vernex_origin = sample(vernex_origin, 900)
+            # vernex_origin = sample(vernex_origin, 900)
 
             self.imgs_paths = vernex_origin + kr_tilt_vernex
 
@@ -96,7 +95,7 @@ class DataProvider:
 
     def get_batch(self):
         while self.buffer_loaded is False:
-            sleep(0.01)
+            pass
         with self._lock:
             self.buffer_loaded = False
             return self.x_data, self.y_data
@@ -104,7 +103,7 @@ class DataProvider:
     def load(self):
         while True:
             while self.buffer_loaded is True:
-                sleep(0.01)
+                pass
                 if self.stop_buffer:
                     return 0
             with self._lock:
@@ -116,10 +115,7 @@ class DataProvider:
                         self.samples = deque(self.imgs_paths)
                         if self.shuffle:
                             shuffle(self.samples)
-                        break
                     img_paths.append(self.samples.pop())
-                if len(img_paths) == 0:
-                    return self.load()
 
                 x_data, y_data = self.to_training_label(img_paths, self.training_dim, self.stride, side=self.side)
                 self.x_data = np.array(x_data)
