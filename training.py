@@ -2,12 +2,15 @@
 main training script
 remember to set 'iteration_to_load' variable to 0 when train from scratch
 """
-from data_provider import DataProvider
-from model_define import model_and_loss
+from keras.optimizers import Adam
 from os.path import join
 from time import time
+
+from data_provider import DataProvider
+from model_define import model_and_loss
 from config import Configs
-from keras.optimizers import Adam
+from model_evaluation.weight_evaluation import test_on_benchmark
+
 
 if __name__ == '__main__':
 
@@ -67,6 +70,13 @@ if __name__ == '__main__':
             with open(join(c.saving_folder, 'record.txt'), 'a+') as f:
                 f.write('iteration %d to %d, time spent: %.2f sec, loss: %.2f\n' %
                         (total_iteration - c.record_interval, total_iteration, time_used, training_loss))
+
+            # test on benchmark and save to .txt
+            test_on_benchmark(model=model,
+                              weight_name='Dim%dIt%dBsize%dLr%.5f.h5' %
+                              (real_training_dim, total_iteration, c.batch_size, c.lr),
+                              weight_folder=None,
+                              load_weight=False)
 
     data_provider_1.stop_loading()
     # data_provider_2.stop_loading()
