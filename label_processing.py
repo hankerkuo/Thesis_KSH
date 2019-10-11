@@ -1,15 +1,15 @@
 """
 this script is used to process the CCPD_FR labels and make them fit the required training format
 """
+from collections import deque
+
 import cv2
 import numpy as np
 
 from img_utility import pts_to_BBCor, read_img_from_dir, pixel_to_ratio, IoU
 from dataset_utility import CCPD_FR_vertices_info
-from collections import deque
 from data_aug import data_aug
-from geometry_calc import polygon_iou, pt_within_polygon
-
+from geometry_calc import polygon_pt_iou, pt_within_polygon
 
 """
 label pre-processing

@@ -62,10 +62,10 @@ def l1(true, pred, szs):
     return res
 
 
-# Ytrue shape -> [b, h, w, 18], in '18' -> [prob_lp, prob_fr, (rxi, ryi) for i in range(4)
+# Ytrue shape -> [b, h, w, 21], in '18' -> [prob_lp, prob_fr, (rxi, ryi) for i in range(4)
 #                                                             (rxj, ryj) for j in range(4)
 #                                                             class_bg, class_front, class_rear]
-# Ypred shape -> [b, h, w, 17], in '17' -> [prob_lpfr, (rxi, ryi) for i in range(4)
+# Ypred shape -> [b, h, w, 20], in '17' -> [prob_lpfr, (rxi, ryi) for i in range(4)
 #                                                      (rxj, ryj) for j in range(4)
 #                                                      class_bg, class_front, class_rear]
 def loss_Vernex_lpfr(Ytrue, Ypred):

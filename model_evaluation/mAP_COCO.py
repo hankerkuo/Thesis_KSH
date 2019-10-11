@@ -1,10 +1,12 @@
-from dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
-from img_utility import read_img_from_dir, pts_to_BBCor, IoU
 from geometry_calc import polygons_iou
 from os.path import splitext
+
 import json
 import traceback
 import matplotlib.pyplot as plt
+
+from dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
+from img_utility import read_img_from_dir, pts_to_BBCor, IoU
 
 
 def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):
@@ -18,20 +20,20 @@ def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):
 
     # read all the prediction result and sort them
     for img_path in imgs_paths_val:
-
-        f = open(splitext(img_path)[0] + '_result.json', 'r')
-
-        data = json.load(f)
         vertices_lp_gt = vernex_vertices_info(img_path)
         vertices_fr_gt = vernex_front_rear_info(img_path)
         fr_class = vernex_fr_class_info(img_path)
 
+        f = open(splitext(img_path)[0] + '_result.json', 'r')
+        data = json.load(f)
+
+        '''for vernex'''
         for lp in data['lps']:
 
             true_or_false = False  # true positive or false positive
             try:
-                if polygons_iou(lp['vertices_lp'], vertices_lp_gt) >= iou_threshold:
-                # if IoU(pts_to_BBCor(*lp['vertices_lp']), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                # if polygons_iou(lp['vertices_lp'], vertices_lp_gt) >= iou_threshold:
+                if IoU(pts_to_BBCor(*lp['vertices_lp']), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
                     true_or_false = True
             except:
                 # traceback.print_exc()
@@ -49,6 +51,41 @@ def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):
                     fr_results.append([classify, 0])
 
             lp_results.append([lp['lp_prob'], true_or_false])
+
+        '''for openALPR
+        for lp in data['results']:
+
+            true_or_false = False  # true positive or false positive
+            lp_vertices = [[s['x'], s['y']] for s in lp['coordinates']]
+            try:
+                # if polygons_iou(lp_vertices, vertices_lp_gt) >= iou_threshold:
+                if IoU(pts_to_BBCor(*lp_vertices), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                    true_or_false = True
+            except:
+                # traceback.print_exc()
+                if IoU(pts_to_BBCor(*lp_vertices), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                    true_or_false = True
+
+            lp_results.append([lp['confidence'], true_or_false])'''
+
+
+        '''for Sighthound
+        for lp in data['objects']:
+
+            annotation = lp['licenseplateAnnotation']
+
+            true_or_false = False  # true positive or false positive
+            lp_vertices = [[s['x'], s['y']] for s in annotation['bounding']['vertices']]
+            try:
+                if polygons_iou(lp_vertices, vertices_lp_gt) >= iou_threshold:
+                # if IoU(pts_to_BBCor(*lp_vertices), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                    true_or_false = True
+            except:
+                # traceback.print_exc()
+                if IoU(pts_to_BBCor(*lp_vertices), pts_to_BBCor(*vertices_lp_gt)) >= iou_threshold:
+                    true_or_false = True
+
+            lp_results.append([annotation['attributes']['system']['string']['confidence'], true_or_false])'''
 
         f.close()
 
@@ -110,7 +147,10 @@ def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):
                 true_classification += 1
                 total_iou += fr_result[1]
         class_precision = true_classification / len(fr_results)
-        average_iou = total_iou / true_classification
+        try:
+            average_iou = total_iou / true_classification
+        except ZeroDivisionError:
+            pass
 
     '''
     plt.plot([x[0] for x in res_pres_dupfree], [y[1] for y in res_pres_dupfree])
@@ -122,7 +162,7 @@ def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):
 
 
 if __name__ == '__main__':
-    output_result_folder = '/home/shaoheng/Documents/Thesis_KSH/output_results/cd_hard_vernex'
+    output_result_folder = '/home/shaoheng/Documents/ALPR_commercials/outputs/Sighthound_cd_hard_vernex'
 
     # coco mAP
     mAP = 0.

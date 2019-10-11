@@ -1,9 +1,12 @@
+from shutil import copy
+from shapely.geometry import Polygon, Point
+
 import numpy as np
 import cv2
-from shutil import copy
+
 from img_utility import read_img_from_dir
 from dataset_utility import CCPD_vertices_info
-from shapely.geometry import Polygon, Point
+
 
 # return the horizontal and vertical rotation degree of a LP by giving its four vertices
 # vertices format -> [[x1, y1], [x2, y2], [x3, y3], [x4, y4]] from br and clockwise
@@ -40,7 +43,7 @@ def pick_range_of_angle(img_folder, output_folder, hor_degree_threshold, ver_deg
 
 # perspective warp: from original predicted license plate vertices to a planar rectangle
 # width and height need to be defined
-def planar_rectification(img, vertices, width=400, height=100):
+def planar_rectification(img, vertices, width=240, height=80):
     vertices = np.array([tuple(vertice) for vertice in vertices]).astype(np.float32)  # vertices is from br and clockwise
     dst = np.array([(width, height), (0, height), (0, 0), (width, 0)]).astype(np.float32)
     maxtrix = cv2.getPerspectiveTransform(vertices, dst)

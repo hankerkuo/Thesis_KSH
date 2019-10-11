@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+
 from img_utility import pts_to_BBCor
 
 
@@ -16,7 +17,7 @@ def draw_LP_by_BBCor(img, BBCor):
     return img
 
 
-# img -> cv2.imread format, pts -> np.array([[x1, y1], [x2, y2], [x2, y2], [x2, y2]])
+# img -> cv2.imread format, pts -> [[x1, y1], [x2, y2], [x2, y2], [x2, y2]]
 # fr_class: 0 -> bg, 1 -> front, 2 -> rear
 def draw_FR_color_by_class(img, lp_prob, pts, fr_class, class_prob):
 

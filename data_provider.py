@@ -4,7 +4,6 @@ need to give arguments -> img_folder, batch_size, training_dim, stride
 it can be served as 1. a infinite iterator which keeps providing data, each image in the folder will be provided
                        before next epoch, the image will be randomly selected (the 'shuffle' argument) in every epoch
                     2. a daemon threading data provider, which is preferred and much faster than the iterator
-* if set splice_train = true, then the output training data's dim will be twice the given value
 """
 from collections import deque
 from random import shuffle, sample
@@ -22,14 +21,13 @@ from label_processing import batch_CCPD_to_training_label, batch_CCPD_to_trainin
 class DataProvider:
 
     def __init__(self, img_folder, batch_size, training_dim, stride,
-                 shuffling=True, splice_train=False, mixing_train=False, side=3.5, model_code=''):
+                 shuffling=True, mixing_train=False, side=3.5, model_code=''):
         self.img_folder = img_folder
         self.batch_size = batch_size
         self.training_dim = training_dim
         self.stride = stride
         self.out_dim = training_dim / stride
         self.shuffle = shuffling
-        self.splice_train = splice_train
         self.mixing_train = mixing_train
         self.side = side
         self.x_data, self.y_data = self.create_buffer(batch_size)
@@ -42,7 +40,7 @@ class DataProvider:
         '''MODEL, in ['Hourglass+Vernex_lpfr', 'Hourglass+Vernex_lp', 'Hourglass+WPOD', 'WPOD+WPOD']'''
         if model_code in ['Hourglass+Vernex_lp', 'Hourglass+WPOD', 'WPOD+WPOD']:
             self.to_training_label = batch_CCPD_to_training_label
-        elif model_code == 'Hourglass+Vernex_lpfr':
+        elif model_code in ['Hourglass+Vernex_lpfr', 'WPOD+vernex_lpfr']:
             self.to_training_label = batch_CCPD_to_training_label_vernex_lpfr
 
     def __iter__(self):

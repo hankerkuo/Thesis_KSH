@@ -4,12 +4,14 @@ used for training vernex
 format -> lpx1&lpy1_lpx2&lpy2_lpx3&lpy3_lpx4&lpy4_frx1&fry1_frx2&fry2_frx3&fry3_frx4&fry4_class.jpg
 class: front, rear, IMPORTANT-> but in label encoding, background=0, front=1, rear=2
 """
+from os.path import splitext, isfile, join
+
+import cv2
+import traceback
+
 from yolo_utility import yolo_readline, yolo_to_BBCor, yolo_class
 from img_utility import read_img_from_dir, BBCor_to_pts
 from dataset_utility import CCPD_vertices_info, CCPD_FR_vertices_info, json_lp_fr
-from os.path import splitext, isfile, join
-import cv2
-import traceback
 
 
 def vernex_from_json():

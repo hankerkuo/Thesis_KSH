@@ -1,8 +1,9 @@
+from os import listdir
+from os.path import splitext, join
+
 import matplotlib.pyplot as plt
 import re
 
-from os import listdir
-from os.path import splitext, join
 
 
 # summarize the txt files under the txts_folder
@@ -43,5 +44,7 @@ def draw_something_to_iteration(txts_folder, to_print=''):
 
 
 if __name__ == '__main__':
-    draw_something_to_iteration('/home/shaoheng/Documents/Thesis_KSH/benchmark/mAP_weights',
-                                to_print='FR_IoU')
+    draw_something_to_iteration('/home/shaoheng/Documents/Thesis_KSH/benchmark/mAP_weights/vernex_stack1_lpfr_dim512_thres0.3',
+                                to_print='mAP')
+
+    # ['mAP', 'mAP50', 'mAP75', 'class_acc', 'FR_IoU']

@@ -1,3 +1,6 @@
+from os import listdir, mkdir, remove
+from os.path import splitext, join, isdir, basename, isfile
+
 import cv2
 import json
 import numpy as np
@@ -6,15 +9,13 @@ from model_evaluation.mAP_COCO import coco_mAP_vernex
 from model_define import model_and_loss
 from img_utility import read_img_from_dir, vertices_rearange
 from drawing_utility import draw_LP_by_vertices, draw_FR_color_by_class
-from os import listdir, mkdir, remove
-from os.path import splitext, join, isdir, basename, isfile
 from config import Configs
 from time import time
 from label_processing import predicted_label_to_origin_image_WPOD, predicted_label_to_origin_image_Vernex_lp
-from label_processing import predicted_label_to_origin_image_Vernex_lpfr
+from label_processing import predicted_label_to_origin_image_Vernex_lpfr, nms
 
 
-def single_img_predict(model, img_path, input_dim=(0, 0), input_norm=True, model_code=''):
+def single_img_predict(model, img_path, input_norm=True, model_code=''):
 
     c = Configs()
 
@@ -22,7 +23,7 @@ def single_img_predict(model, img_path, input_dim=(0, 0), input_norm=True, model
         label_to_origin = predicted_label_to_origin_image_WPOD
     elif model_code in ['Hourglass+Vernex_lp']:
         label_to_origin = predicted_label_to_origin_image_Vernex_lp
-    elif model_code in ['Hourglass+Vernex_lpfr']:
+    elif model_code in ['Hourglass+Vernex_lpfr', 'WPOD+vernex_lpfr']:
         label_to_origin = predicted_label_to_origin_image_Vernex_lpfr
 
     img = cv2.imread(img_path)
@@ -31,15 +32,24 @@ def single_img_predict(model, img_path, input_dim=(0, 0), input_norm=True, model
         div = 255.
     else:
         div = 1.
-    img_feed = cv2.resize(img, input_dim) / div
-    img_feed = np.expand_dims(img_feed, 0)
 
-    start_pred = time()
-    output_labels = model.predict(img_feed)
-    time_spent = time() - start_pred
+    time_spent = 0.
 
-    final_labels = label_to_origin(img_shape, output_labels[0], stride=c.stride,
-                                   prob_threshold=c.prob_threshold, use_nms=True, side=c.side)
+    final_labels = []
+    for scale in c.online_val_scale:
+        img_feed = cv2.resize(img, scale) / div
+        img_feed = np.expand_dims(img_feed, 0)
+
+        start_pred = time()
+        output_labels = model.predict(img_feed)
+        time_spent += time() - start_pred
+
+        final_label = label_to_origin(img_shape, output_labels[0], stride=c.stride,
+                                      prob_threshold=c.val_prob_threshold, use_nms=False, side=c.side)
+        final_labels.extend(final_label)
+
+    if c.val_use_nms:
+        final_labels = nms(final_labels)
 
     return final_labels, time_spent
 
@@ -68,8 +78,8 @@ def test_on_benchmark(model, weight_name, weight_folder, load_weight=True):
     print 'processing benchmark image results ...'
     for img_path in imgs_paths:
 
-        final_labels, sec = single_img_predict(model=model, img_path=img_path, input_dim=c.test_input_dim,
-                                               input_norm=c.input_norm, model_code=c.model_code)
+        final_labels, sec = single_img_predict(model=model, img_path=img_path,
+                                               input_norm=c.val_input_norm, model_code=c.model_code)
 
         time_spent += sec
 
@@ -77,7 +87,7 @@ def test_on_benchmark(model, weight_name, weight_folder, load_weight=True):
 
         infos = {'lps': []}
 
-        for i, final_label in enumerate(final_labels[:c.LPs_to_find]):
+        for i, final_label in enumerate(final_labels[:c.val_LPs_to_find]):
 
             prob, vertices_lp = final_label[:2]
             vertices_lp = vertices_lp.tolist()
@@ -92,7 +102,7 @@ def test_on_benchmark(model, weight_name, weight_folder, load_weight=True):
             # draw visualization results
             img = draw_LP_by_vertices(img, vertices_lp)
             # if it's lpfr model, then draw front and rear
-            if c.model_code in ['Hourglass+Vernex_lpfr']:
+            if c.model_code in ['Hourglass+Vernex_lpfr', 'WPOD+vernex_lpfr']:
                 vertices_fr = final_label[2].tolist()
                 fr_class, class_prob = final_label[3]
                 img = draw_FR_color_by_class(img, prob, vertices_fr, fr_class, class_prob)
@@ -107,7 +117,7 @@ def test_on_benchmark(model, weight_name, weight_folder, load_weight=True):
         if isfile(json_path):
             remove(json_path)
         with open(json_path, 'a+') as f:
-            json.dump(infos, f)
+            json.dump(infos, f, indent=2)
 
         cv2.imwrite(join(c.temp_outout_folder, basename(img_path)), img)
 
@@ -140,7 +150,7 @@ def test_on_benchmark(model, weight_name, weight_folder, load_weight=True):
 
 if __name__ == '__main__':
     c = Configs()
-    model = model_and_loss()[0]
+    model = model_and_loss()
 
     for weight in listdir(c.weight_folder_to_eval):
         test_on_benchmark(model=model, weight_name=weight, weight_folder=c.weight_folder_to_eval)

@@ -1,10 +1,11 @@
 import numpy as np
 import imgaug.augmenters as iaa
+import cv2
+
 from img_utility import read_img_from_dir
 from dataset_utility import CCPD_FR_vertices_info, CCPD_FR_front_rear_info
 from dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
 from drawing_utility import draw_LP_by_vertices
-import cv2
 from config import Configs
 
 
@@ -31,7 +32,7 @@ def data_aug(img_paths):
 
         if c.model_code in ['Hourglass+Vernex_lp', 'Hourglass+WPOD', 'WPOD+WPOD']:
             vertices = np.array(vertices_info(img_path))
-        elif c.model_code == 'Hourglass+Vernex_lpfr':
+        elif c.model_code in ['Hourglass+Vernex_lpfr', 'WPOD+vernex_lpfr']:
             vertices = np.array(vertices_info(img_path) + front_rear_info(img_path))
 
         key_pts.append(vertices)

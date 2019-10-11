@@ -4,9 +4,10 @@ This file is used to delete the images without labels
 AND THEN
 Generate the train.txt and test.txt for YOLO
 """
-from os.path import splitext, isfile, join, basename
 from os import remove
+from os.path import splitext, isfile, join, basename
 from glob import glob, iglob
+
 from img_utility import read_img_from_dir
 
 

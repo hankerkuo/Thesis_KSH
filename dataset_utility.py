@@ -1,7 +1,10 @@
 from os.path import basename, splitext
-from img_utility import BBCor_to_pts, vertices_rearange
+
 import cv2
 import json
+
+from img_utility import BBCor_to_pts, vertices_rearange
+
 
 # return a list of BB coordinates [[x1, y1], [x2, y2]]
 def CCPD_BBCor_info(img_path):
@@ -65,6 +68,7 @@ def vernex_vertices_info(img_path):
             map(int, vertices[2].split('&')), map(int, vertices[3].split('&'))]
 
 
+# return string, 'front' ro 'rear'
 def vernex_fr_class_info(img_path):
     img_name = basename(img_path)
     ele = img_name.split('.')[0].split('_')

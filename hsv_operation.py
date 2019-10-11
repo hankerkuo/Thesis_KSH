@@ -1,7 +1,9 @@
 import cv2
+import numpy as np
+
 from img_utility import read_img_from_dir, cut_by_fourpts
 from dataset_utility import CCPD_FR_vertices_info, CCPD_vertices_info
-import numpy as np
+
 
 
 # convert the hsv information from GIMP to cv2 hsv system
