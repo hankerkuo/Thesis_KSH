@@ -19,7 +19,7 @@
       <div class="inner">
         <a href="{{ '/' | absolute_url }}">
           <!--<h1>{{  site.title | default: site.github.repository_name }}</h1>-->
-          <h1>{{123}}</h1>
+          <h1>An Anchor-Free License Plate Detector</h1>
         </a>
         <h2>{{ site.description | default: site.github.project_tagline }}</h2>
         {% if site.github.is_project_page %}
@@ -36,7 +36,9 @@
         <section id="main-content">
           {{ content }}
         </section>
-
+        
+        <a href="./chapters/Abstract.html">Link to another page</a>
+        
         <aside id="sidebar">
           {% if site.show_downloads %}
             <a href="{{ site.github.zip_url }}" class="button">
@@ -48,6 +50,11 @@
               .tar.gz file
             </a>
           {% endif %}
+
+          <a href="https://hankerkuo.github.io/Thesis_KSH/chapters/Abstract.html" class="button">
+              Abstract
+          </a>
+
 
           {% if site.github.is_project_page %}
             <p class="repo-owner"><a href="{{ site.github.repository_url }}">{{ site.github.repository_name }}</a> is maintained by <a href="{{ site.github.owner_url }}">{{ site.github.owner_name }}</a>.</p>
