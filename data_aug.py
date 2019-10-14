@@ -38,11 +38,11 @@ def data_aug(img_paths):
         key_pts.append(vertices)
 
     seq = iaa.Sequential([
-                        sometimes(iaa.Affine(scale={"x": (0.5, 1), "y": (0.5, 1)}, shear=(-60, 60), rotate=(-25, 25))),
-                        sometimes(iaa.PerspectiveTransform(scale=(0.05, 0.1), keep_size=False)),
+                        sometimes(iaa.Affine(scale={"x": (0.5, 1), "y": (0.5, 1)}, shear=(-60, 60), rotate=(-25, 25), cval=255)),
+                        sometimes(iaa.PerspectiveTransform(scale=(0.05, 0.1), keep_size=False, cval=255)),
                         iaa.AddToHueAndSaturation(value=(-50, 50)),
                         iaa.Fliplr(0.5),
-                        iaa.Affine(scale=(0.2, 1))
+                        iaa.Affine(scale=(0.2, 1), cval=255)
                                                    ], random_order=True)
     '''
     seq = iaa.Sequential([iaa.Fliplr(0.5)])
@@ -57,14 +57,24 @@ def data_aug(img_paths):
 
 
 if __name__ == '__main__':
-    img_paths = read_img_from_dir('/home/shaoheng/Documents/Thesis_KSH/training_data/kr_tilt_vernex')[:]
-    while 1:
-        images_aug, keypoints_aug, fr_classes = data_aug(img_paths)
+    from os.path import join
+    from collections import deque
+    # img_paths = deque(read_img_from_dir('/home/shaoheng/Documents/Thesis_KSH/training_data/vernex'))
+    img_paths = '/home/shaoheng/Documents/Thesis_KSH/training_data/vernex/717&482_527&482_527&421_717&421_958&555_255&555_255&186_958&186_front.jpg'
+    out_dir = '/home/shaoheng/Documents/thesis_ingredient/aug_single_data_several_times'
+    n = 100
+    for _ in range(100):
+        imgs_to_aug = [img_paths]
+
+        images_aug, keypoints_aug, fr_classes = data_aug(imgs_to_aug)
         for image_aug, keypoint_aug, fr_class in zip(images_aug, keypoints_aug, fr_classes):
             image_aug = draw_LP_by_vertices(image_aug, keypoint_aug[0:4])
-            image_aug = draw_LP_by_vertices(image_aug, keypoint_aug[4:8])
+            image_aug = draw_LP_by_vertices(image_aug, keypoint_aug[4:8], (36, 247, 255))
             print fr_class
-            cv2.imshow('img', image_aug)
-            cv2.waitKey(0)
+
+            n += 1
+            cv2.imwrite(join(out_dir, '%d.jpg' % n), image_aug)
+            # cv2.imshow('img', image_aug)
+            # cv2.waitKey(0)
 
 

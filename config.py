@@ -25,7 +25,7 @@ class Configs:
         self.load_model_byh5 = True
         self.load_weight = False
         self.train_from_stratch = False
-        self.iteration_to_load = 91000
+        self.iteration_to_load = 139000
         """Transfer learning"""
         self.transfer_learning = False
         self.transfer_weight = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/final_train/ini_Dim256It598000Bsize16Lr0.00025.h5'
@@ -38,7 +38,7 @@ class Configs:
 
         """Testing configs"""
         # if single scale testing, then just put one tuple
-        self.multi_scales = ((512, 512),)
+        self.multi_scales = ((512, 512), (256, 256))
 
         self.prob_threshold = 0.3
         self.LPs_to_find = 10
@@ -46,8 +46,8 @@ class Configs:
         self.input_norm = True
 
         self.weight = '/home/shaoheng/Documents/Thesis_KSH/Link to training_result/Dim256It598000Bsize16Lr0.00025.h5'
-        self.input_dir = '/home/shaoheng/Documents/Thesis_KSH/samples/kr_lowres'
-        self.output_dir = '/home/shaoheng/Documents/Thesis_KSH/output_results/kr'
+        self.input_dir = '/home/shaoheng/Documents/Thesis_KSH/benchmark/cd_hard_vernex'
+        self.output_dir = '/home/shaoheng/Documents/Thesis_KSH/output_results/vernex_niceresults/lpfr_class/cd_hard_598000_DIM256+512'
 
         """Benchmark configs"""
         self.info_saving_folder = '/home/shaoheng/Documents/Thesis_KSH/benchmark/mAP_weights/vernex_stack1_lpfr_dim512_thres0.3'  # MOST IMPORTANT

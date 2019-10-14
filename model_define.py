@@ -45,7 +45,7 @@ def model_and_loss(training=False):
                                                    bottleneck=bottleneck_block)
         loss = loss_Vernex_lp
     elif c.model_code == 'Hourglass+Vernex_lpfr':
-        model = create_hourglass_network_vernex_lpfr(None, num_stacks=1, num_channels=256,
+        model = create_hourglass_network_vernex_lpfr(None, num_stacks=2, num_channels=256,
                                                      inres=(c.training_dim, c.training_dim),
                                                      outres=(c.out_dim, c.out_dim),
                                                      bottleneck=bottleneck_block)

@@ -10,7 +10,7 @@ from img_utility import read_img_from_dir
 c = Configs()
 model = model_and_loss(training=False)
 
-sample_dir = '/home/shaoheng/Documents/Thesis_KSH/samples/kr_lowres'
+sample_dir = '/home/shaoheng/Documents/Thesis_KSH/benchmark/cd_hard_vernex'
 
 for img_path in read_img_from_dir(sample_dir):
     img = cv2.imread(img_path)
@@ -37,17 +37,17 @@ for img_path in read_img_from_dir(sample_dir):
 
     plt.subplot(2, 2, 2)
     heat_map_statistic = output_labels[:, :, 0]
-    heatmap = seaborn.heatmap(heat_map_statistic, cmap='coolwarm', center=0.2, xticklabels=False, yticklabels=False,
+    heatmap = seaborn.heatmap(heat_map_statistic, cmap='jet', center=0.2, xticklabels=False, yticklabels=False,
                               square=True)
 
     plt.subplot(2, 2, 3)
     heat_map_statistic = output_labels[:, :, 18]
-    heatmap = seaborn.heatmap(heat_map_statistic, cmap='coolwarm', center=0.5, xticklabels=False, yticklabels=False,
+    heatmap = seaborn.heatmap(heat_map_statistic, cmap='jet', center=0.5, xticklabels=False, yticklabels=False,
                               square=True)
 
     plt.subplot(2, 2, 4)
     heat_map_statistic = output_labels[:, :, 19]
-    heatmap = seaborn.heatmap(heat_map_statistic, cmap='coolwarm', center=0.5, xticklabels=False, yticklabels=False,
+    heatmap = seaborn.heatmap(heat_map_statistic, cmap='jet', center=0.5, xticklabels=False, yticklabels=False,
                               square=True)
 
     plt.tight_layout()
