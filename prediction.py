@@ -96,7 +96,7 @@ if __name__ == '__main__':
             # if it's lpfr model, then draw front and rear
             if c.model_code in ['Hourglass+Vernex_lpfr', 'WPOD+vernex_lpfr']:
                 vertices_fr = final_label[2].tolist()
-                fr_class, class_prob = final_label[3]
+                fr_class, class_prob = final_label[3]  # fr_class : 0->BG, 1->front, 2->rear
                 img = draw_FR_color_by_class(img, prob, vertices_fr, fr_class, class_prob)
 
                 # add output results in order to save into json file
