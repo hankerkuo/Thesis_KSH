@@ -29,7 +29,7 @@
 ![heatmap](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/heatmap.jpg)
 
 ## What kind of scenario is the model good at?
-## -> A single image with multiple cars inside, see the example
+## -> An image with multiple cars inside, see the comparison below
 
 <table>
 
