@@ -42,3 +42,8 @@
 </table>
 
 ![car_overlapped_problem](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/car_overlapped_problem.jpg)
+
+## Model architecture
+
+![modelindetail](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/modelindetail.jpg)
+
