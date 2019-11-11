@@ -6,14 +6,39 @@
 
 ## How's the pose estimation ability?
 ### Assign each pixel to certain class, possible for pixel-wise segmentation!
-### (a) -> input image  (b) -> High-probability license plate position 
-### (c) -> front pixels (d) -> rear pixels
+
+<table>
+  
+<tr><td colspan="2"><strong>Results</strong></td></tr>
+
+<!-- Line 1: (a) and (b)-->
+<tr>
+<td>(a) -> input image</td>
+<td>(b) -> High-probability license plate position</td>
+</tr>
+
+<!-- Line 2: (c) and (d)-->
+<tr>
+<td>(c) -> front pixels</td>
+<td>(d) -> rear pixels</td>
+</tr>
+
+</table>
+
 ![heatmap2](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/heatmap2.jpg)
 ![heatmap](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/heatmap.jpg)
 
 ## What kind of scenario is the model good at?
 ## -> A single image with multiple cars inside, see the example
 
-### Left  column -> Vehicle-detection-based method 
-### Right column -> Our method
+<table>
+
+<!-- Line 1: (a) and (b)-->
+<tr>
+<td><strong>Left  column -> Vehicle-detection-based method</strong></td>
+<td><strong>Right column -> Our method</strong></td>
+</tr>
+
+</table>
+
 ![car_overlapped_problem](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/car_overlapped_problem.jpg)
