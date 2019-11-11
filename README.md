@@ -35,8 +35,8 @@
 
 <!-- Line 1: (a) and (b)-->
 <tr>
-<td><strong>Left  column -> Vehicle-detection-based method</strong></td>
-<td><strong>Right column -> Our method</strong></td>
+<td><strong>Left  column -> Vehicle-detection-based method (Detection missing)</strong></td>
+<td><strong>Right column -> Our method (All license plates found)</strong></td>
 </tr>
 
 </table>
