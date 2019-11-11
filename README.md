@@ -44,7 +44,8 @@
 ![car_overlapped_problem](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/car_overlapped_problem.jpg)
 
 ## Model architecture
-
+### Backbone
 ![modelindetail](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/modelindetail.jpg)
+### Heads
 ![Head_detail](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/Head_detail.jpg)
 
