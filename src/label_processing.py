@@ -6,10 +6,10 @@ from collections import deque
 import cv2
 import numpy as np
 
-from img_utility import pts_to_BBCor, read_img_from_dir, pixel_to_ratio, IoU
-from dataset_utility import CCPD_FR_vertices_info
-from data_aug import data_aug
-from geometry_calc import polygon_pt_iou, pt_within_polygon
+from src.img_utility import pts_to_BBCor, read_img_from_dir, pixel_to_ratio, IoU
+from src.dataset_utility import CCPD_FR_vertices_info
+from src.data_aug import data_aug
+from src.geometry_calc import pt_within_polygon
 
 """
 label pre-processing

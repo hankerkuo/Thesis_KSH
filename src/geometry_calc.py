@@ -4,8 +4,8 @@ from shapely.geometry import Polygon, Point
 import numpy as np
 import cv2
 
-from img_utility import read_img_from_dir
-from dataset_utility import CCPD_vertices_info
+from src.img_utility import read_img_from_dir
+from src.dataset_utility import CCPD_vertices_info
 
 
 # return the horizontal and vertical rotation degree of a LP by giving its four vertices

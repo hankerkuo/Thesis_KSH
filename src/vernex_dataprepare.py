@@ -9,9 +9,9 @@ from os.path import splitext, isfile, join
 import cv2
 import traceback
 
-from yolo_utility import yolo_readline, yolo_to_BBCor, yolo_class
-from img_utility import read_img_from_dir, BBCor_to_pts
-from dataset_utility import CCPD_vertices_info, CCPD_FR_vertices_info, json_lp_fr
+from src.yolo_utility import yolo_readline, yolo_to_BBCor, yolo_class
+from src.img_utility import read_img_from_dir, BBCor_to_pts
+from src.dataset_utility import CCPD_vertices_info, json_lp_fr
 
 
 def vernex_from_json():

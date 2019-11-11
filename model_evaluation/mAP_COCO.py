@@ -1,12 +1,10 @@
-from geometry_calc import polygons_iou
+from src.geometry_calc import polygons_iou
 from os.path import splitext
 
 import json
-import traceback
-import matplotlib.pyplot as plt
 
-from dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
-from img_utility import read_img_from_dir, pts_to_BBCor, IoU
+from src.dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
+from src.img_utility import read_img_from_dir, pts_to_BBCor, IoU
 
 
 def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):

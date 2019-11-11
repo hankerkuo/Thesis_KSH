@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from img_utility import pts_to_BBCor
+from src.img_utility import pts_to_BBCor
 
 
 # img -> cv2.imread format, pts -> [[x1, y1], [x2, y2], [x2, y2], [x2, y2]]

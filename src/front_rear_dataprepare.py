@@ -7,10 +7,9 @@ from os.path import basename, join, isfile
 import cv2
 import numpy as np
 
-from dataset_utility import CCPD_vertices_info, openALPR_BBCor_info, CCPD_FR_vertices_info
-from yolo_utility import yolo_readline, yolo_to_BBCor
-from img_utility import cut_by_BBCor, read_img_from_dir, cor_sys_trans, BBCor_to_pts
-
+from src.dataset_utility import CCPD_vertices_info
+from src.yolo_utility import yolo_readline, yolo_to_BBCor
+from src.img_utility import cut_by_BBCor, read_img_from_dir, cor_sys_trans
 
 if __name__ == '__main__':
     output_dir = '/home/shaoheng/Documents/Thesis_KSH/training_data/CCPD_FR_tilt'
