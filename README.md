@@ -46,4 +46,5 @@
 ## Model architecture
 
 ![modelindetail](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/modelindetail.jpg)
+![Head_detail](https://github.com/hankerkuo/Thesis_KSH/blob/master/chapters/pics/Head_detail.jpg)
 
