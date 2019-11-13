@@ -2,7 +2,7 @@
 
 ## What does the model do?
 ### License plate detection & Car pose estimation!
-![common_result](https://github.com/hankerkuo/thesis_KSH/blob/master/chapters/pics/common_result.jpg)
+![common_result](chapters/pics/common_result.jpg)
 
 ## How's the pose estimation ability?
 ### Assign each pixel to certain class, possible for pixel-wise segmentation!
@@ -25,8 +25,8 @@
 
 </table>
 
-![heatmap2](https://github.com/hankerkuo/thesis_KSH/blob/master/chapters/pics/heatmap2.jpg)
-![heatmap](https://github.com/hankerkuo/thesis_KSH/blob/master/chapters/pics/heatmap.jpg)
+![heatmap2](chapters/pics/heatmap2.jpg)
+![heatmap](chapters/pics/heatmap.jpg)
 
 ## What kind of scenario is the model good at?
 ## -> An image with multiple cars inside, see the comparison below
@@ -41,11 +41,11 @@
 
 </table>
 
-![car_overlapped_problem](https://github.com/hankerkuo/thesis_KSH/blob/master/chapters/pics/car_overlapped_problem.jpg)
+![car_overlapped_problem](chapters/pics/car_overlapped_problem.jpg)
 
 ## Model architecture
 ### Backbone
-![modelindetail](https://github.com/hankerkuo/thesis_KSH/blob/master/chapters/pics/modelindetail.jpg)
+![modelindetail](chapters/pics/modelindetail.jpg)
 ### Heads
-![Head_detail](https://github.com/hankerkuo/thesis_KSH/blob/master/chapters/pics/Head_detail.jpg)
+![Head_detail](chapters/pics/Head_detail.jpg)
 
