@@ -1,13 +1,21 @@
+<<<<<<< HEAD
 from geometry_calc import polygons_iou
 from os.path import splitext, join, basename, isfile
+=======
+from src.geometry_calc import polygons_iou
+from os.path import splitext
+>>>>>>> d12b71c9aa4d9d625c9931e6c030ac51d51757f0
 
 import json
-import traceback
-import matplotlib.pyplot as plt
 
+<<<<<<< HEAD
 from dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
 from dataset_utility import json_lp_fr_couples
 from img_utility import read_img_from_dir, pts_to_BBCor, IoU
+=======
+from src.dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
+from src.img_utility import read_img_from_dir, pts_to_BBCor, IoU
+>>>>>>> d12b71c9aa4d9d625c9931e6c030ac51d51757f0
 
 
 def coco_mAP_vernex(output_result_folder, iou_threshold, classify_cal=True):

@@ -5,8 +5,8 @@ remember to set 'iteration_to_load' variable to 0 when train from scratch
 from os.path import join
 from time import time
 
-from data_provider import DataProvider
-from model_define import model_and_loss
+from src.data_provider import DataProvider
+from src.model_define import model_and_loss
 from config import Configs
 from model_evaluation.weight_evaluation import test_on_benchmark
 

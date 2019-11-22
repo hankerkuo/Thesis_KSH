@@ -7,7 +7,7 @@ from models.Vernex_lpfr import create_hourglass_network_vernex_lpfr
 from models.hourglass_WPOD import create_hourglass_network_WPOD
 from models.WPOD_WPOD import model_WPOD
 from models.WPOD_lpfr import WPOD_lpfr
-from loss import loss_WPOD, loss_Vernex_lp, loss_Vernex_lpfr
+from src.loss import loss_WPOD, loss_Vernex_lp, loss_Vernex_lpfr
 from config import Configs
 
 

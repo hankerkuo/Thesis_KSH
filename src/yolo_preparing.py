@@ -6,9 +6,9 @@ Generate the train.txt and test.txt for YOLO
 """
 from os import remove
 from os.path import splitext, isfile, join, basename
-from glob import glob, iglob
+from glob import iglob
 
-from img_utility import read_img_from_dir
+from src.img_utility import read_img_from_dir
 
 
 '''

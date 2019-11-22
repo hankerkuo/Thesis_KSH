@@ -3,7 +3,7 @@ from os.path import basename, splitext
 import cv2
 import json
 
-from img_utility import BBCor_to_pts, vertices_rearange
+from src.img_utility import BBCor_to_pts, vertices_rearange
 
 
 # return a list of BB coordinates [[x1, y1], [x2, y2]]

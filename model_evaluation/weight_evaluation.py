@@ -6,13 +6,13 @@ import json
 import numpy as np
 
 from model_evaluation.mAP_COCO import coco_mAP_vernex
-from model_define import model_and_loss
-from img_utility import read_img_from_dir, vertices_rearange
-from drawing_utility import draw_LP_by_vertices, draw_FR_color_by_class
+from src.model_define import model_and_loss
+from src.img_utility import read_img_from_dir, vertices_rearange
+from src.drawing_utility import draw_LP_by_vertices, draw_FR_color_by_class
 from config import Configs
 from time import time
-from label_processing import predicted_label_to_origin_image_WPOD, predicted_label_to_origin_image_Vernex_lp
-from label_processing import predicted_label_to_origin_image_Vernex_lpfr, nms
+from src.label_processing import predicted_label_to_origin_image_WPOD, predicted_label_to_origin_image_Vernex_lp
+from src.label_processing import predicted_label_to_origin_image_Vernex_lpfr, nms
 
 
 def single_img_predict(model, img_path, input_norm=True, model_code=''):

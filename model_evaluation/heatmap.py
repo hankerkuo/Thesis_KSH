@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import cv2
 
 from config import Configs
-from model_define import model_and_loss
-from img_utility import read_img_from_dir
+from src.model_define import model_and_loss
+from src.img_utility import read_img_from_dir
 
 c = Configs()
 model = model_and_loss(training=False)

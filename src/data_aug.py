@@ -2,10 +2,9 @@ import numpy as np
 import imgaug.augmenters as iaa
 import cv2
 
-from img_utility import read_img_from_dir
-from dataset_utility import CCPD_FR_vertices_info, CCPD_FR_front_rear_info
-from dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
-from drawing_utility import draw_LP_by_vertices
+from src.dataset_utility import CCPD_FR_vertices_info, CCPD_FR_front_rear_info
+from src.dataset_utility import vernex_vertices_info, vernex_front_rear_info, vernex_fr_class_info
+from src.drawing_utility import draw_LP_by_vertices
 from config import Configs
 
 
@@ -58,7 +57,7 @@ def data_aug(img_paths):
 
 if __name__ == '__main__':
     from os.path import join
-    from collections import deque
+
     # img_paths = deque(read_img_from_dir('/home/shaoheng/Documents/Thesis_KSH/training_data/vernex'))
     img_paths = '/home/shaoheng/Documents/Thesis_KSH/training_data/vernex/717&482_527&482_527&421_717&421_958&555_255&555_255&186_958&186_front.jpg'
     out_dir = '/home/shaoheng/Documents/thesis_ingredient/aug_single_data_several_times'
