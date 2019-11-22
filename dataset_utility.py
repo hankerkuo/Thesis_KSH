@@ -77,11 +77,12 @@ def vernex_fr_class_info(img_path):
 
 # read the json file including lp and fr annotations
 # it will return the lp and fr coordinate start at br and clock-wise
-# return -> w, h, class, {vertices indexed by 'fr' or 'front' or 'rear'}
+# return -> w, h, class, {vertices indexed by 'lp' or 'front' or 'rear'}
+# this function is only supported for one-lp and one-fr
 def json_lp_fr(json_path):
     with open(json_path, 'r') as f:
         data = json.load(f)
-    weight = data['imageWidth']
+    width = data['imageWidth']
     height = data['imageHeight']
     lp_fr_vertices = {}
     for annotation in data['shapes']:
@@ -97,10 +98,54 @@ def json_lp_fr(json_path):
     assert 'lp' in lp_fr_vertices and ('front' in lp_fr_vertices or 'rear' in lp_fr_vertices),\
            'Now this function is only supported for one-lp and one-fr'
 
-    return weight, height, cls, lp_fr_vertices
+    return width, height, cls, lp_fr_vertices
+
+
+'''
+this function can read image with multiple lp and fr annotations 
+the annotations are made by labelme
+label class name format -> front1, front1_lp, front2, front2_lp ....
+return value will be a list of couples (lp info, owner car's fr info)
+it will return the lp and fr coordinate start at br and clock-wise
+return -> w, h, [couple] in couple -> {index: 1.lp_cor, 2.fr_cor, 3.fr_class}
+class will be returned in string format 'front' or 'rear'
+'''
+def json_lp_fr_couples(json_path):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+    width = data['imageWidth']
+    height = data['imageHeight']
+    couple_lst = []
+    lp_lst = {}
+    fr_lst = {}
+
+    # first divide the data into lp dictionary and fr dictionary
+    for annotation in data['shapes']:
+        if annotation['shape_type'] == 'rectangle':
+            pts = BBCor_to_pts(*[map(int, pt) for pt in annotation['points']])
+        elif annotation['shape_type'] == 'polygon':
+            pts = vertices_rearange([map(int, pt) for pt in annotation['points']])
+
+        if 'lp' in annotation['label']:
+            lp_lst[annotation['label']] = pts
+        else:
+            fr_lst[annotation['label']] = pts
+
+    for fr in fr_lst:
+        single_couple = {'fr_cor': fr_lst[fr], 'lp_cor': lp_lst[fr + '_lp']}
+        if 'front' in fr:
+            single_couple['fr_class'] = 'front'
+        elif 'rear' in fr:
+            single_couple['fr_class'] = 'rear'
+
+        couple_lst.append(single_couple)
+
+    return width, height, couple_lst
 
 
 if __name__ == '__main__':
-    path = '/home/shaoheng/Documents/Thesis_KSH/training_data/cd_hard/05344.json'
-    w, h, cls, lp_fr = json_lp_fr(path)
-    print w, h, cls, lp_fr
+    path = '/home/shaoheng/Documents/Thesis_KSH/samples/kr_lowres/IMG_8265.json'
+    path_0 = '/home/shaoheng/Documents/Thesis_KSH/samples/kr_lowres/IMG_8267.json'
+    w, h, cp_lst = json_lp_fr_couples(path)
+    w_0, h_0, cp_lst_0 = json_lp_fr_couples(path)
+    print w, h, len(cp_lst + cp_lst_0)

@@ -30,7 +30,7 @@ def draw_something_to_iteration(txts_folder, to_print=''):
             records.append([int(ite), mAP, mAP50, mAP75, class_acc, fr_iou])
 
     records.sort(key=lambda x: x[0])
-    records = records[:866]
+    records = records[:300]
 
     plt.plot([x[0] for x in records],
              [y[info_dict[to_print]] for y in records], 'dodgerblue')
@@ -45,7 +45,7 @@ def draw_something_to_iteration(txts_folder, to_print=''):
 
 
 if __name__ == '__main__':
-    draw_something_to_iteration('/home/shaoheng/Documents/Thesis_KSH/benchmark/mAP_weights/vernex_lpfr_class_dim512_thres0.3',
+    draw_something_to_iteration('/home/shaoheng/Documents/Thesis_KSH/benchmark/mAP_weights/WPOD_vernex_lpfr_dim512_thres0.3',
                                 to_print='FR_IoU')
 
     # ['mAP', 'mAP50', 'mAP75', 'class_acc', 'FR_IoU']
