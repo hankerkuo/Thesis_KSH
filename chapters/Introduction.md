@@ -36,6 +36,7 @@ Figure 1.2. A real case of detection missing. The license plate of the left car 
 As mentioned in section 1.1, there are four sub-tasks in the ALPR process, our research fo-cuses on the license plate detection task, aiming to accurately locate the license plate in vari-ous scenes with single or multiple vehicles inside. As to maintain the contextual information when dealing with higher license plate detection performance, the owner car of the license plate will be detected as well, the pose of the car, on which side (front or rear) does the license plate lay on will also be classified. Figure 1.3 shows a detection example, the license plate detection missing problem mentioned in the last section can be solved by our proposed method.
 
 ![Figure1.3](pics/Figure1.3.jpg)
+
 Figure 1.3. Detection result of our method. The two license plates are all found precisely.
 
 We conclude our main contributions as followed:
