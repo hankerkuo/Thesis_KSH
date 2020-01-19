@@ -25,9 +25,11 @@ Here, we conclude two problems of license plate detection we would like to solve
 
 ![Figure1.1-1](pics/Figure1.1-1.png)
 ![Figure1.1-2](pics/Figure1.1-2.png)
+
 Figure 1.1. Examples of desired (upper) and undesired (lower) arrangement of license plates based on vehicle detection method, the license plate detection results are marked in stars.
 
 ![Figure1.2](pics/Figure1.2.jpg)
+
 Figure 1.2. A real case of detection missing. The license plate of the left car has been re-gressed to the wrong license plate which belongs to the car on the right side.
  
 ## 1.4.	Contributions

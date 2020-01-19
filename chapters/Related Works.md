@@ -8,6 +8,7 @@ A popular benchmark for object detection is the Pascal Visual Object Class (VOC)
 	After 2013, deep learning-based detection methods almost dominate the Pascal VOC challenge, including Region-based Convolutional Neural Network (R-CNN) [5] and its ex-tensions Fast R-CNN [6] and Faster R-CNN [7], SSD [8] and its extension DSSD [9], after 2017, the newly released state-of-the-art detectors are still improving their detecting ability but tend to shift to another more challenging benchmark MS COCO [10] which has 80 categories. The deep learning-based object detectors broke through the limitation of traditional detectors and made a tremendous improvement in mAP scores. This section will introduce several fa-mous object detectors and related algorithms. 
 
 ![Figure2.1](pics/Figure2.1.png)
+
 Figure 2.1. The trend chart of mAP in the Pascal VOC 2012 object detection challenge, the statistics are obtained from either Pascal VOC official website or directly presented by paper authors. The training dataset might differ since some of the papers used an amplified training dataset. 
 ### 2.1.1. Overview of Recent Trend
 Recent object detectors can be categorized into two branches, One-Stage detectors, and Two-Stage detectors, one-stage detectors make the region proposal for finding Region Of In-terests (ROI) and object classification at the same time, while two-stage detectors first find the ROI and feed those ROIs into the classification process. There is a trade-off between one-stage detectors and two-stage detectors, one-stage detectors tend to have lower computa-tional cost and thus have faster processing speed, while two-stage detectors tend to have higher performance since the region proposal part is separated, which leads to better ROI qualities, result in better classification results and tighter bounding boxes. 
@@ -39,6 +40,7 @@ To generate final object detection results, an encoding method for image informa
 	Combining the concept of both Detection Pyramid and Integrated Features, Feature Pyramid [21] was proposed, which is at the bottom right in Figure 2.2. They first fuse the features extracted from different levels of layers, perform the detection in each level, and then further combine the detection results. RetinaNet and YOLOv3 adopted Feature Pyramid and obtained promising results. Although Feature Pyramid is experimented to yield the best detec-tion results, considering the trade-off between performance and inference time, we chose In-tegrated Features as our final feature extraction choice since the applications of license plate detection task often prefer real-time processing.
 
 ![Figure2.2](pics/Figure2.2.png)
+
 Figure 2.2. Different feature extraction methods.
 ### 2.1.3.	Region Proposal Methods
 Anchor-based:
@@ -56,9 +58,11 @@ Stacked Hourglass Network [19] was first designed for human pose estimation, it 
 Each block (except the block with * mark) in Figure 2.3 refers to a residual block shown in Figure 2.4. Residual block was first proposed by He et al. [18], a skip connection from in-put layer directly to output layer was added, it was designed to address the problem of gradi-ent vanishing problem when training a deep neural network, when the network goes deeper, information from shallower layer might disappear due to the gradient-based back-propagation, residual block makes it possible to train a network as deep we want. The channel amount (kernel amount) is basically 256 in the entire Hourglass Network, as we can see in the input and output of the residual block. Inside the residual block, there are two CNNs with 128 channels with kernel sizes 1 and 3, followed by a CNN with 256 channels with kernel size 1. Stacked Hourglass Network was used for feature extraction backbone network in recent ob-ject detection researches like CornerNet and CenterNet.
 
 ![Figure2.3](pics/Figure2.3.jpg)
+
 Figure 2.3. Hourglass Network. The block with * mark refers to simple feature addition, other blocks refer to residual blocks.
 
 ![Figure2.4](pics/Figure2.4.png)
+
 Figure 2.4. Residual block used in Hourglass Network.
 ## 2.3.	Focal Loss
 Focal Loss [14] is an optimization strategy aiming at handling imbalanced samples. Since in the training process of an object detector, ground-truth positive labels are always less than ground-truth negative labels with a huge gap. To prevent the loss created by the ground-truth negative labels overwhelming the training stage, methods for handling this problem is essen-tial and often called hard negative mining. 
@@ -72,6 +76,7 @@ FL is the formula of Focal Loss, it can be considered as an extended form of Cro
 	In our work, we used extended forms of Focal Loss in the localization loss and classifi-cation loss and described them in section 3.2.1.
 
 ![Figure2.5](pics/Figure2.5.png)
+
 Figure 2.5. Focal Loss [14]. The Cross-Entropy loss is the curve with γ= 0. The loss with larger   value diminished eminently with different levels depending on the value of γ. 
 ## 2.4.	Non-Maximum Suppression (NMS)
 In the test stage of an object detector, the output object probability larger than a decided threshold will be considered a positive detection result. There will be a massive amount of duplicated bounding boxes for a single object, to eliminate the duplicated ones and keep the most-likely one, we often perform Non-Maximum Suppression (NMS).
@@ -80,4 +85,5 @@ In the test stage of an object detector, the output object probability larger th
 	 	2.4.1
 
 ![Figure2.6](pics/Figure2.6.png) 
+
 Figure 2.6. Illustration of Non-Maximum Suppression (NMS), the bounding box which best fits the object has the highest score. The other two bounding boxes are removed, assuming their IoUs with the best box are larger than the testing threshold  .
