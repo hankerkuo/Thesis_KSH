@@ -10,6 +10,7 @@ The proposed model is called VerNeX (A Net with object’s VerteX information). 
 	This section includes the backbone feature extraction network design, and the head net-work architecture with its function and design inspiration, which is done in one-stage manner. The last part of this section will be a brief discussion for anchor-free method.
 
 ![Figure3.1](pics/Figure3.1.jpg)
+
 Figure 3.1. The whole pipeline of our model.
  
 ### 3.1.1.	Backbone Network Design
@@ -18,14 +19,17 @@ As discussed in section 2.1.1, a one-stage detector has a trade-off between spee
 	The right side of Figure 3.2 is the architecture of a single Hourglass Network, the ResBlock (Residual block) architecture is shown in Figure 3.3. After passing through the first Hourglass Network, following the original design of stacked Hourglass Network [19], we add two parallel CNN branches with linear activation functions and do the element-wise addi-tion with the features before feeding into Hourglass Network in a residual manner. The fea-ture map after performing element-wise addition will then pass through another Hourglass Network with the same architecture and yield a final output with size  .
 
 ![Figure3.2](pics/Figure3.2.png)
+
 Figure 3.2. Backbone network. A two-stack Hourglass Network.
  
 ![Figure3.3](pics/Figure3.3.png)
+
 Figure 3.3. Residual block.
 ### 3.1.2.	Head Network Design
 Beyond the backbone network, we designed four parallel CNNs as our head networks, each of them handles different tasks, Figure 3.4 gives a clear comprehension of the architecture, and we will illustrate each of the head networks in this section.
 
 ![Figure3.4](pics/Figure3.4.png)
+
 Figure 3.4. Head network, there are four parallel CNN branches, the top localization branch, the middle two region regression branches, and the final classification branch.
 
 1.	Localization for license plate
@@ -35,6 +39,7 @@ The region regression part is done by a convolutional neural network with filter
 	Since we need the expanding factor for unit vectors, exact scalars must be obtained, so we used linear activation function (equivalent to no activation function) for the CNN layer.
  
 ![Figure3.5](pics/Figure3.5.png)
+
 Figure 3.5. Region regression method.
 
 3.	Region regression for front-rear
@@ -52,30 +57,29 @@ Here, we introduce the contextual information auxiliary training, which is the l
 	 	3.3.1.1
 
 ![Figure3.6](pics/Figure3.6.png)
+
 Figure 3.6. Comparison between Focal Loss with and without contextual information auxil-iary.
 
-	The second part of the loss function is the region regression part. We used L1 loss for this purpose. Equation 3.3.1.2 shows the loss of a single pixel   in the output feature map.   and   refer to the x and y coordinate of the four ground truth vertices,   from bottom right and clock-wise.   and   refer to the basic vectors men-tioned in section 3.1.2,   and   are the output values of the region regression net-work, the multiplication of v and T then yields the final prediction coordinates. The loss will be the summation of the L1 losses of the four vertices. A factor   was added to normalize the loss value since the L1 region regression loss will be relatively large compared to localiza-tion loss and classification loss due to the linear activation function. For the small object, li-cense plate, we set  , and for the car’s front-rear, considering the out feature map size of our model  , we set  .
+The second part of the loss function is the region regression part. We used L1 loss for this purpose. Equation 3.3.1.2 shows the loss of a single pixel   in the output feature map.   and   refer to the x and y coordinate of the four ground truth vertices,   from bottom right and clock-wise.   and   refer to the basic vectors men-tioned in section 3.1.2,   and   are the output values of the region regression net-work, the multiplication of v and T then yields the final prediction coordinates. The loss will be the summation of the L1 losses of the four vertices. A factor   was added to normalize the loss value since the L1 region regression loss will be relatively large compared to localiza-tion loss and classification loss due to the linear activation function. For the small object, li-cense plate, we set  , and for the car’s front-rear, considering the out feature map size of our model  , we set  .
 
-	 	3.3.1.2
-	 
-	 
-	  
+3.3.1.2
 
-	The last part is the classification loss, which is shown in equation 3.3.1.3. We used the multi-class Focal Loss.  ,  , and   refer to the ground-truth positive cases for front class, rear class, and background, respectively.  ,   and   refer to the predicted probability. We set   in the training process.
+The last part is the classification loss, which is shown in equation 3.3.1.3. We used the multi-class Focal Loss.  ,  , and   refer to the ground-truth positive cases for front class, rear class, and background, respectively.  ,   and   refer to the predicted probability. We set   in the training process.
 
-	 	3.3.1.3
+3.3.1.3
 
-	Equation 3.3.1.4 gives the final loss function. The total loss is the summation of localiza-tion, region regression, and classification. We only calculate the region regression loss when the ground-truth label of the pixel is positive; otherwise, it is set to zero. Note that there are two terms of region regression loss, one for license plate and one for car’s front-rear region.
+Equation 3.3.1.4 gives the final loss function. The total loss is the summation of localiza-tion, region regression, and classification. We only calculate the region regression loss when the ground-truth label of the pixel is positive; otherwise, it is set to zero. Note that there are two terms of region regression loss, one for license plate and one for car’s front-rear region.
 
-	 	3.3.1.4
+3.3.1.4
 
 ###　3.2.2.	Label Encoding
 With only the bounding box annotation in our training dataset, we need several label encoding methods to meet the loss function in the optimization process for each head network. Figure 3.7 visualizes the label encoding for a single input image. For simplicity, we will use GT as the abbreviation of Ground-Truth. To clearly describe the type of bounding box, we will use the terms bounding rectangle and bounding quadrilateral in the following content.
 
 ![Figure3.7](pics/Figure3.7.png) 
+
 Figure 3.7. Label encoding method.
 
-	For the localization loss function, we need to give each pixel a label indicating either the pixel is inside a license plate or not, which is   in the loss function. We first mapped the GT bounding quadrilateral coordinates to the scale   to meet the output size of our model. We then define a bounding rectangle having the same size with the GT license plate bounding rectangle (here, we transferred the annotations from bounding quadrilateral format to bounding rectangle format), and then let each pixel inside the GT bounding rectangle be centroid of that bounding rectangle, calculate the IoU value between it and the GT bounding rectangle, if the value is larger than a threshold, then we assign the pixel value to 1, else as-sign to 0. As a result, pixels with value 1 means the ground-truth positive. The upper branch of Figure 3.7 shows the encoded label, the black region contains the pixels with value 1. We set the threshold to 0.7 for the localization label encoding.
+For the localization loss function, we need to give each pixel a label indicating either the pixel is inside a license plate or not, which is   in the loss function. We first mapped the GT bounding quadrilateral coordinates to the scale   to meet the output size of our model. We then define a bounding rectangle having the same size with the GT license plate bounding rectangle (here, we transferred the annotations from bounding quadrilateral format to bounding rectangle format), and then let each pixel inside the GT bounding rectangle be centroid of that bounding rectangle, calculate the IoU value between it and the GT bounding rectangle, if the value is larger than a threshold, then we assign the pixel value to 1, else as-sign to 0. As a result, pixels with value 1 means the ground-truth positive. The upper branch of Figure 3.7 shows the encoded label, the black region contains the pixels with value 1. We set the threshold to 0.7 for the localization label encoding.
 
 Algorithm 1: Localization label encoding
 1. Map the coordinates of GT bounding quadrilateral to scale  
@@ -89,10 +93,8 @@ For pixel (m, n) inside the GT bounding rectangle:
 If IoU of :
  
 Else:
- 
 
-
-	For the region regression loss function,   and   were encoded with the same method described in the previous paragraph, we set IoU to 0.7 and 0.4 for   and   respectively,   and   were mapped from the vertices of the image in original size into the output size   and then re-centered to (m, n).
+For the region regression loss function,   and   were encoded with the same method described in the previous paragraph, we set IoU to 0.7 and 0.4 for   and   respectively,   and   were mapped from the vertices of the image in original size into the output size   and then re-centered to (m, n).
 
 Algorithm 2: Region regression label encoding
 1. Map the coordinates of GT bounding quadrilateral to scale  
@@ -108,9 +110,7 @@ If IoU of :
  
 Else:
  
-
-	
-	For the classification loss function, we assigned each pixel with a one-hot label with three classes, front, rear, and background. In our implementation, the one-hot label is in the format of [ ,  ,  ]. The assigning strategy is to encode all pixels inside the GT quadrilaterals as front or rear, else encode as background. In the case of background class ( ), pixels were encoded as  , front class ( ) as   and rear class ( ) as  , the one-hot encoding then made it easy to perform multi-class Focal Loss calculation.
+For the classification loss function, we assigned each pixel with a one-hot label with three classes, front, rear, and background. In our implementation, the one-hot label is in the format of [ ,  ,  ]. The assigning strategy is to encode all pixels inside the GT quadrilaterals as front or rear, else encode as background. In the case of background class ( ), pixels were encoded as  , front class ( ) as   and rear class ( ) as  , the one-hot encoding then made it easy to perform multi-class Focal Loss calculation.
 
 Algorithm 3: Classification label encoding
 1. Map the coordinates of GT bounding quadrilateral to scale  
@@ -147,6 +147,7 @@ Hue and Saturation	-50 ~ +50 (in scale of 255)	100%
 Overall scale	0.2 ~ 1.0	100%
 
 ![Figure3.8](pics/Figure3.8.png)
+
 Figure 3.8. Samples of augmented data.
 ### 3.3.2.	Step by Step Transfer Learning
 There are three functional head networks in our design, and thus the end-to-end and simulta-neous training leads to a potential training instability. If the model fails to converge, it is quite hard to trace which head design is raising a problem. Thus in our design process, we added each the functional head step-by-step, making sure the single head design idea is working correctly and then expanded the model with the rest functional heads. We will explain the model expanding process in this section.
@@ -157,5 +158,6 @@ The training settings have been modified due to the training states change durin
 	At first, our label encoding method for classification had a defect that we encoded too small region around the front-rear area of a car, this led to a low-performance of classification accuracy, and thus at 156k iteration, we corrected the labeling strategy as the method men-tioned in section 3.2.2. At 170k, we found the region regression for car’s front-rear part had an inadequate performance compared to the region regression for the license plate, so we de-creased the value of   from 64 to 32, to increase the loss contribution and let the model more focus on the regression for car’s front-rear. At 330k, we enhanced the angle of shear transformation in data augmentation from 60ﾟto 90ﾟ in order to handle more tilted cases. At 423k, we made the label encoding for front-rear region regression more flexible that we de-creased the IoU threshold from 0.7 to 0.4. At 423k, we added the proposed Oblique_KR da-taset into the training process, making the model be able to handle those extremely oblique cases.
 
 ![Figure3.9](pics/Figure3.9.png)
+
 Figure 3.9. Timeline of the training strategy.
 

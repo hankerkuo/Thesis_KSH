@@ -53,9 +53,11 @@ For evaluating our model, we need a benchmark dataset that can closely represent
 
 
 ![Figure4.1](pics/Figure4.1.png)
+
 Figure 4.1. Examples of OpenALPR and CCPD dataset.
 
 ![Figure4.2](pics/Figure4.2.png)
+
 Figure 4.2. Examples of Oblique_KR dataset.
  
 ## 4.2.	Performance
@@ -65,24 +67,29 @@ Figure 4.3 shows some examples of the detection results on the CD-HARD dataset, 
 	Figure 4.4 shows the detection results on the Multiple Cars Scene dataset, this dataset is quite more challenging than the CD-HARD dataset since some of the license plates are rela-tively small in the images, making it hard to detect with low input dimension, we used mul-ti-scale testing with dimensions 256, 512 and 1024 for those visualization results since it ob-tained the best mAP on the Multiple Cars Scene dataset.
 
 ![Figure4.3](pics/Figure4.3.png)
+
 Figure 4.3. Detection results of CD-HARD dataset .
 
 	Figure 4.5 gives some examples of the detection missing issue by vehicle detec-tion-based method mentioned in section 1.3. By utilizing our proposed method, we success-fully avoided this issue and found all of the license plates inside the image. This indicates that our method is more reliable when the amount of vehicle inside an image becomes larger since the overlapped situation among vehicles will increase as well.
 	Figure 4.6 and Figure 4.7 visualize the license plate probability for each pixel and the classification ability of the model by plotting the distribution of those high probability pixels. Our model can locate the license plate within a precise region and tell all the possible pixels for the car’s front and rear.
  
 ![Figure4.4](pics/Figure4.4.png)
+
 Figure 4.4. Detection results of Multiple Cars Scene dataset .
 
 ![Figure4.5](pics/Figure4.5.png)
+
 Figure 4.5. Comparison between vehicle detection-based license plate detection [2] (left col-umn) and proposed method (right column). On the left side, license plate detection missing appeared due to the false regression of license plate; on the other hand, our proposed method can avoid those cases and find all of the license plates.
 
 ![Figure4.6-1](pics/Figure4.6-1.png)
 ![Figure4.6-2](pics/Figure4.6-2.png)
+
 Figure 4.6. Heatmap of CD-HARD dataset.
 (a): Input image (b): License plate probability (c): Front probability (d): Rear probability 
  
 ![Figure4.7-1](pics/Figure4.7-1.png) 
 ![Figure4.7-2](pics/Figure4.7-2.png) 
+
 Figure 4.7. Heatmap of Multiple Cars Scene dataset.
 (a): Input image (b): License plate probability (c): Front probability (d): Rear probability
 ### 4.2.2.	Quantitative Evaluation
@@ -163,10 +170,13 @@ The learning states for each functional head are shown in Figure 4.8, Figure 4.9
 	The states for mAP and mAP75 performance can be found in Appendix A. As a compar-ison, we also trained other models based on different backbone networks, and their learning states can be found in Appendix B.
 
 ![Figure4.8](pics/Figure4.8.png)
+
 Figure 4.8. mAP50 to iteration on CD-HARD dataset.
 
 ![Figure4.9](pics/Figure4.9.png)
+
 Figure 4.9. Front-rear IoU to iteration on CD-HARD dataset.
 
 ![Figure4.10](pics/Figure4.10.png)
+
 Figure 4.10. Classification accuracy to iteration on CD-HARD dataset.
