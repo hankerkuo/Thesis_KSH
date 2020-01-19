@@ -9,20 +9,23 @@ In the last section (3.3) of this chapter, we give a view of the training method
 The proposed model is called VerNeX (A Net with object’s VerteX information). VerNeX is a one-stage and anchor-free detector. The whole model is shown in Figure 3.1. The width and height of an input RGB image will be first downscaled to   and pass through two stacks of Hourglass Network, until here is the backbone feature extraction part. By utilizing the ob-tained features, three parallel heads will then handle localization, region regression, and clas-sification individually. The right side of Figure 3.1 gives an output example of our model, we can see that the license plate region has been found, and the front-rear region of the owner car is also given along with its pose information.
 	This section includes the backbone feature extraction network design, and the head net-work architecture with its function and design inspiration, which is done in one-stage manner. The last part of this section will be a brief discussion for anchor-free method.
 
- 
+![Figure3.1](chapters/pics/Figure3.1.jpg)
 Figure 3.1. The whole pipeline of our model.
  
 ### 3.1.1.	Backbone Network Design
 As discussed in section 2.1.1, a one-stage detector has a trade-off between speed and perfor-mance, and the performance will descend significantly especially for small objects. License plates, in general situations, are small objects (imaging the scale difference between license plates and vehicles), so the feature extraction ability of the backbone network architecture becomes considerable, the spatial information needs to be fruitful to avoid missing detections for small objects. Inspired by the adoption of Hourglass Network in recent one-stage detectors [15] [25], we introduced Hourglass Network as our backbone architecture and found it per-formed much better than a normal straight forward CNN, a comparison between their perfor-mance can be found in Appendix B.
 	The network design is given in Figure 3.2, our training input size is fixed in  , after two down-sampling processes (a convolution layer and a max-pooling layer with stride 2), the image with its scale of   width and height will then be fed into a two-stack Hour-glass Network. The layers in Figure 3.2 without special mention are all ReLU activation function, and the layers in trapezoids are down-sampled or up-sampled processes by a factor of 2.
 	The right side of Figure 3.2 is the architecture of a single Hourglass Network, the ResBlock (Residual block) architecture is shown in Figure 3.3. After passing through the first Hourglass Network, following the original design of stacked Hourglass Network [19], we add two parallel CNN branches with linear activation functions and do the element-wise addi-tion with the features before feeding into Hourglass Network in a residual manner. The fea-ture map after performing element-wise addition will then pass through another Hourglass Network with the same architecture and yield a final output with size  .
- 
+
+![Figure3.2](chapters/pics/Figure3.2.png)
 Figure 3.2. Backbone network. A two-stack Hourglass Network.
  
+![Figure3.3](chapters/pics/Figure3.3.png)
 Figure 3.3. Residual block.
 ### 3.1.2.	Head Network Design
 Beyond the backbone network, we designed four parallel CNNs as our head networks, each of them handles different tasks, Figure 3.4 gives a clear comprehension of the architecture, and we will illustrate each of the head networks in this section.
- 
+
+![Figure3.4](chapters/pics/Figure3.4.png)
 Figure 3.4. Head network, there are four parallel CNN branches, the top localization branch, the middle two region regression branches, and the final classification branch.
 
 1.	Localization for license plate
@@ -31,6 +34,7 @@ The localization head is done by a convolutional neural network with filter size
 The region regression part is done by a convolutional neural network with filter size  , and the output feature map has a size of  , there are eight output chan-nels for each pixel, the output channels handle the region proposal for license plates. Say output values for a single pixel are  , Figure 3.5 explains how these values work with region proposal, first, we will have four pairs of unit vectors in the same arrangement of four quadrants,   and   then serve as scalars to expand these unit vectors, after expanding a pair of unit vectors, do the vector addition of the horizontal vector and vertical vector in the pair to obtain a destination point. After per-forming the same procedure on the four pairs of unit vectors, we will obtain four points, and these points will then be the vertices of a quadrilateral, which indicate the region of a license plate.
 	Since we need the expanding factor for unit vectors, exact scalars must be obtained, so we used linear activation function (equivalent to no activation function) for the CNN layer.
  
+![Figure3.5](chapters/pics/Figure3.5.png)
 Figure 3.5. Region regression method.
 
 3.	Region regression for front-rear
@@ -46,7 +50,8 @@ The introduction of the loss function is arranged in the same order as the head 
 Here, we introduce the contextual information auxiliary training, which is the last term in equation 3.3.1.1. The inspiration is that there will not be a license plate outside the region of a vehicle, so we designed an additional term for this purpose,   refers to the ground truth label for the areas of vehicle’s front part or rear part, which is annotated in our proposed dataset. For typical license plate detection purposes, the license plates are arranged onto the front-rear part of a car, and the additional term gives an extra penalty if a positive license plate detection is made outside the region of a vehicle. We set a factor   to balance the loss contribution for avoiding this term overwhelming the entire training process. Figure 3.6 gives an intuition for the difference between adding the contextual information auxiliary term and without adding it. With the aid of this additional term, the model is able to avoid the false pos-itive detection of license plate outside the region of a vehicle.
 
 	 	3.3.1.1
- 
+
+![Figure3.6](chapters/pics/Figure3.6.png)
 Figure 3.6. Comparison between Focal Loss with and without contextual information auxil-iary.
 
 	The second part of the loss function is the region regression part. We used L1 loss for this purpose. Equation 3.3.1.2 shows the loss of a single pixel   in the output feature map.   and   refer to the x and y coordinate of the four ground truth vertices,   from bottom right and clock-wise.   and   refer to the basic vectors men-tioned in section 3.1.2,   and   are the output values of the region regression net-work, the multiplication of v and T then yields the final prediction coordinates. The loss will be the summation of the L1 losses of the four vertices. A factor   was added to normalize the loss value since the L1 region regression loss will be relatively large compared to localiza-tion loss and classification loss due to the linear activation function. For the small object, li-cense plate, we set  , and for the car’s front-rear, considering the out feature map size of our model  , we set  .
@@ -67,7 +72,7 @@ Figure 3.6. Comparison between Focal Loss with and without contextual informatio
 ###　3.2.2.	Label Encoding
 With only the bounding box annotation in our training dataset, we need several label encoding methods to meet the loss function in the optimization process for each head network. Figure 3.7 visualizes the label encoding for a single input image. For simplicity, we will use GT as the abbreviation of Ground-Truth. To clearly describe the type of bounding box, we will use the terms bounding rectangle and bounding quadrilateral in the following content.
 
- 
+![Figure3.7](chapters/pics/Figure3.7.png) 
 Figure 3.7. Label encoding method.
 
 	For the localization loss function, we need to give each pixel a label indicating either the pixel is inside a license plate or not, which is   in the loss function. We first mapped the GT bounding quadrilateral coordinates to the scale   to meet the output size of our model. We then define a bounding rectangle having the same size with the GT license plate bounding rectangle (here, we transferred the annotations from bounding quadrilateral format to bounding rectangle format), and then let each pixel inside the GT bounding rectangle be centroid of that bounding rectangle, calculate the IoU value between it and the GT bounding rectangle, if the value is larger than a threshold, then we assign the pixel value to 1, else as-sign to 0. As a result, pixels with value 1 means the ground-truth positive. The upper branch of Figure 3.7 shows the encoded label, the black region contains the pixels with value 1. We set the threshold to 0.7 for the localization label encoding.
@@ -141,7 +146,7 @@ Flip	Only horizontal flip	50%
 Hue and Saturation	-50 ~ +50 (in scale of 255)	100%
 Overall scale	0.2 ~ 1.0	100%
 
- 
+![Figure3.8](chapters/pics/Figure3.8.png)
 Figure 3.8. Samples of augmented data.
 ### 3.3.2.	Step by Step Transfer Learning
 There are three functional head networks in our design, and thus the end-to-end and simulta-neous training leads to a potential training instability. If the model fails to converge, it is quite hard to trace which head design is raising a problem. Thus in our design process, we added each the functional head step-by-step, making sure the single head design idea is working correctly and then expanded the model with the rest functional heads. We will explain the model expanding process in this section.
@@ -151,6 +156,6 @@ Our final model training started from an initial weight which we had already tra
 The training settings have been modified due to the training states change during the training process. This section will mention the modifications and can be cross-validated with the learning-state charts in section 4.3. The timeline is shown in Figure 3.9.
 	At first, our label encoding method for classification had a defect that we encoded too small region around the front-rear area of a car, this led to a low-performance of classification accuracy, and thus at 156k iteration, we corrected the labeling strategy as the method men-tioned in section 3.2.2. At 170k, we found the region regression for car’s front-rear part had an inadequate performance compared to the region regression for the license plate, so we de-creased the value of   from 64 to 32, to increase the loss contribution and let the model more focus on the regression for car’s front-rear. At 330k, we enhanced the angle of shear transformation in data augmentation from 60ﾟto 90ﾟ in order to handle more tilted cases. At 423k, we made the label encoding for front-rear region regression more flexible that we de-creased the IoU threshold from 0.7 to 0.4. At 423k, we added the proposed Oblique_KR da-taset into the training process, making the model be able to handle those extremely oblique cases.
 
- 
+![Figure3.9](chapters/pics/Figure3.9.png)
 Figure 3.9. Timeline of the training strategy.
 

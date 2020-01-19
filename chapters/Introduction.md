@@ -23,13 +23,17 @@ Here, we conclude two problems of license plate detection we would like to solve
 1.Lack of detection ability for tilted and oblique license plates.
 2.Loss of contextual information while dealing with more general license plate detec-tion.
 
+![Figure1.1-1](chapters/pics/Figure1.1-1.png)
+![Figure1.1-2](chapters/pics/Figure1.1-2.png)
 Figure 1.1. Examples of desired (upper) and undesired (lower) arrangement of license plates based on vehicle detection method, the license plate detection results are marked in stars.
 
+![Figure1.2](chapters/pics/Figure1.2.jpg)
 Figure 1.2. A real case of detection missing. The license plate of the left car has been re-gressed to the wrong license plate which belongs to the car on the right side.
  
 ## 1.4.	Contributions
 As mentioned in section 1.1, there are four sub-tasks in the ALPR process, our research fo-cuses on the license plate detection task, aiming to accurately locate the license plate in vari-ous scenes with single or multiple vehicles inside. As to maintain the contextual information when dealing with higher license plate detection performance, the owner car of the license plate will be detected as well, the pose of the car, on which side (front or rear) does the license plate lay on will also be classified. Figure 1.3 shows a detection example, the license plate detection missing problem mentioned in the last section can be solved by our proposed method.
 
+![Figure1.3](chapters/pics/Figure1.3.jpg)
 Figure 1.3. Detection result of our method. The two license plates are all found precisely.
 
 We conclude our main contributions as followed:

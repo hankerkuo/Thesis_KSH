@@ -51,10 +51,11 @@ Total	3102	Containing a massive variety of scenarios
 For evaluating our model, we need a benchmark dataset that can closely represent the re-al-world scenes. Silva and Jung [2] proposed CD-HARD dataset, which is a sub-dataset of Cars Dataset [33]. CD-HARD includes 102 vehicle images with most of the license plates in oblique angles (difficult cases for license plate detection), and the distance of the vehicles ranges from close, medium to far. Weather conditions are most under clear weather in the day-time. We used 101 images in the CD-HARD dataset with a single car inside as our validation dataset (excluding the one with multiple vehicles inside for consistency). In the later section, we use this dataset as a benchmark to compare with other existing systems.
 	Another benchmark dataset is the Multiple Cars Scene dataset, which is proposed by Kuo et al. [23], the dataset includes 32 images with multiple cars inside a single image. Weather conditions are all under clear weather in the daytime, and the distance of the vehicles is also diverse, with very near vehicles and far vehicles with unrecognizable license plates. This dataset will be used to evaluate the contextual information missing problem mentioned in section 1.3. A comparison between our proposed method and vehicle detection-based license plate detection method [2] will be made on this dataset.
 
- 
+
+![Figure4.1](chapters/pics/Figure4.1.png)
 Figure 4.1. Examples of OpenALPR and CCPD dataset.
 
- 
+![Figure4.2](chapters/pics/Figure4.2.png)
 Figure 4.2. Examples of Oblique_KR dataset.
  
 ## 4.2.	Performance
@@ -63,21 +64,25 @@ Model performance evaluation is divided into qualitative visualization and quant
 Figure 4.3 shows some examples of the detection results on the CD-HARD dataset, the text above the bounding quadrilaterals of car’s front-rear gives the classification results, Front, Rear, or Unknown for background class. The number followed by class is the output of the Softmax activation function. The license plate probability is also written at the bottom of the bounding quadrilateral. The results shown in Figure 4.3 are done by multi-scale testing with input dimensions 256 and 512, which is also the testing dimension yielding the highest mAP score on the CD-HARD dataset.
 	Figure 4.4 shows the detection results on the Multiple Cars Scene dataset, this dataset is quite more challenging than the CD-HARD dataset since some of the license plates are rela-tively small in the images, making it hard to detect with low input dimension, we used mul-ti-scale testing with dimensions 256, 512 and 1024 for those visualization results since it ob-tained the best mAP on the Multiple Cars Scene dataset.
 
- 
+![Figure4.3](chapters/pics/Figure4.3.png)
 Figure 4.3. Detection results of CD-HARD dataset .
 
 	Figure 4.5 gives some examples of the detection missing issue by vehicle detec-tion-based method mentioned in section 1.3. By utilizing our proposed method, we success-fully avoided this issue and found all of the license plates inside the image. This indicates that our method is more reliable when the amount of vehicle inside an image becomes larger since the overlapped situation among vehicles will increase as well.
 	Figure 4.6 and Figure 4.7 visualize the license plate probability for each pixel and the classification ability of the model by plotting the distribution of those high probability pixels. Our model can locate the license plate within a precise region and tell all the possible pixels for the car’s front and rear.
  
+![Figure4.4](chapters/pics/Figure4.4.png)
 Figure 4.4. Detection results of Multiple Cars Scene dataset .
- 
+
+![Figure4.5](chapters/pics/Figure4.5.png)
 Figure 4.5. Comparison between vehicle detection-based license plate detection [2] (left col-umn) and proposed method (right column). On the left side, license plate detection missing appeared due to the false regression of license plate; on the other hand, our proposed method can avoid those cases and find all of the license plates.
 
-  
+![Figure4.6-1](chapters/pics/Figure4.6-1.png)
+![Figure4.6-2](chapters/pics/Figure4.6-2.png)
 Figure 4.6. Heatmap of CD-HARD dataset.
 (a): Input image (b): License plate probability (c): Front probability (d): Rear probability 
  
- 
+![Figure4.7-1](chapters/pics/Figure4.7-1.png) 
+![Figure4.7-2](chapters/pics/Figure4.7-2.png) 
 Figure 4.7. Heatmap of Multiple Cars Scene dataset.
 (a): Input image (b): License plate probability (c): Front probability (d): Rear probability
 ### 4.2.2.	Quantitative Evaluation
@@ -156,10 +161,12 @@ The learning states for each functional head are shown in Figure 4.8, Figure 4.9
 	The IoU performance of the front-rear region is shown in Figure 4.9. A leap can be ob-served after 400k iterations, which was the benefited result from the label encoding strategy at 423k mentioned in section 3.3.3. This gave us an insight that a proper design of the labeling strategy can undoubtedly have a massive effect on the performance of a supervised learning object detector.
 	The classification task is relatively easy for our model to learn, as shown in Figure 4.10, the classification had already reached high accuracy in the early iterations. Nevertheless, the accuracy is quite low before 156k iterations, that was due to the wrong label strategy in our early design, we labeled the front-rear region by the same method used in region regression, which led to a limited region for ground-true labels. Observing the situation, we modified the label encoding strategy immediately and solved the issue. The strategy has been described in section 3.2.2.
 	The states for mAP and mAP75 performance can be found in Appendix A. As a compar-ison, we also trained other models based on different backbone networks, and their learning states can be found in Appendix B.
- 
+
+![Figure4.8](chapters/pics/Figure4.8.png)
 Figure 4.8. mAP50 to iteration on CD-HARD dataset.
- 
+
+![Figure4.9](chapters/pics/Figure4.9.png)
 Figure 4.9. Front-rear IoU to iteration on CD-HARD dataset.
 
- 
+![Figure4.10](chapters/pics/Figure4.10.png)
 Figure 4.10. Classification accuracy to iteration on CD-HARD dataset.
