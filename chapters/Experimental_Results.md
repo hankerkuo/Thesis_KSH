@@ -1,11 +1,10 @@
-# Experimental Results
-4.	Experimental Results
+# 4. Experimental Results
 This section will first give information about the environment and the data we used in our ex-periment (4.1). And then show the output result of our model (4.2), including quantitative evaluation on the benchmark dataset and qualitative visualization results. An analysis of the model learning state will then be given in section 4.3.
 	As mentioned in section 2.4, it is necessary to have a post-processing method for elimi-nating a large amount of duplicated detection results. All of our final license plate detection results are filtered by a particular NMS method counting on contextual comprehension. Our model will detect a license plate along with the car’s front-rear area, and we assume that only a single license plate will appear in that front-rear region, so we performed NMS on the front-rear region instead of the license plate region. We set the IoU threshold = 0.1, meaning that if there is a slightly overlapped region for two front-rear regions, the license plate detec-tion with a lower confidence score will be removed. We found this method to make the detec-tion results cleaner and more reliable, and thus we applied this method in all of our testing processes. 
-4.1.	Environment and Data Curation
+## 4.1.	Environment and Data Curation
 This section first describes the hardware and software in our experiment. Second, for dataset explanation, it includes choosing appropriate images, annotation demand and criteria, and the prospect of training results. We first describe the data we collected for training and then de-scribe the data served as a benchmark to evaluate our model and compare it with other exist-ing models.
  
-4.1.1.	Experiment Environment
+### 4.1.1.	Experiment Environment
 The training and testing process were on operating system Ubuntu 16.04 LTS with CPU Intel i5-6500 3.20GHz, GPU GeForce GTX1080, DRAM 16GB. We built the system with py-thon 2.7, and the deep learning frameworks are Tensorflow [28] and Keras [29]. The codes are all available online . We also made the codes available for Windows and python 3.7, which can be found on our project website . Table 4.1 lists the configuration we set during the training process.
 
 Table 4.1. Training Configuration
@@ -22,7 +21,7 @@ Record interval	Every 1000 iterations
 Total training time	138 hours
 
  
-4.1.2.	Training Dataset
+### 4.1.2.	Training Dataset
 Our training data contains three components:
 1.	Vehicle images from different nations with various camera views
 2.	Annotation of license plate in either bounding rectangles or bounding quadrilaterals
@@ -48,7 +47,7 @@ Oblique_KR
 (Proposed)	90	Korea	Extremely oblique	Horizontal:0~60ﾟ
 Vertical: 0~25ﾟ
 Total	3102	Containing a massive variety of scenarios
-4.1.3.	Benchmark Dataset
+### 4.1.3.	Benchmark Dataset
 For evaluating our model, we need a benchmark dataset that can closely represent the re-al-world scenes. Silva and Jung [2] proposed CD-HARD dataset, which is a sub-dataset of Cars Dataset [33]. CD-HARD includes 102 vehicle images with most of the license plates in oblique angles (difficult cases for license plate detection), and the distance of the vehicles ranges from close, medium to far. Weather conditions are most under clear weather in the day-time. We used 101 images in the CD-HARD dataset with a single car inside as our validation dataset (excluding the one with multiple vehicles inside for consistency). In the later section, we use this dataset as a benchmark to compare with other existing systems.
 	Another benchmark dataset is the Multiple Cars Scene dataset, which is proposed by Kuo et al. [23], the dataset includes 32 images with multiple cars inside a single image. Weather conditions are all under clear weather in the daytime, and the distance of the vehicles is also diverse, with very near vehicles and far vehicles with unrecognizable license plates. This dataset will be used to evaluate the contextual information missing problem mentioned in section 1.3. A comparison between our proposed method and vehicle detection-based license plate detection method [2] will be made on this dataset.
 
@@ -58,9 +57,9 @@ Figure 4.1. Examples of OpenALPR and CCPD dataset.
  
 Figure 4.2. Examples of Oblique_KR dataset.
  
-4.2.	Performance
+## 4.2.	Performance
 Model performance evaluation is divided into qualitative visualization and quantitative evalu-ation. The qualitative visualization part gives several examples of the detection results on the benchmark dataset and heatmaps for the license plate probability and classification ability. The quantitative evaluation part lists the classification accuracy and mAP performance comparison with existing commercial systems.
-4.2.1.	Visualization Results
+### 4.2.1.	Visualization Results
 Figure 4.3 shows some examples of the detection results on the CD-HARD dataset, the text above the bounding quadrilaterals of car’s front-rear gives the classification results, Front, Rear, or Unknown for background class. The number followed by class is the output of the Softmax activation function. The license plate probability is also written at the bottom of the bounding quadrilateral. The results shown in Figure 4.3 are done by multi-scale testing with input dimensions 256 and 512, which is also the testing dimension yielding the highest mAP score on the CD-HARD dataset.
 	Figure 4.4 shows the detection results on the Multiple Cars Scene dataset, this dataset is quite more challenging than the CD-HARD dataset since some of the license plates are rela-tively small in the images, making it hard to detect with low input dimension, we used mul-ti-scale testing with dimensions 256, 512 and 1024 for those visualization results since it ob-tained the best mAP on the Multiple Cars Scene dataset.
 
@@ -81,7 +80,7 @@ Figure 4.6. Heatmap of CD-HARD dataset.
  
 Figure 4.7. Heatmap of Multiple Cars Scene dataset.
 (a): Input image (b): License plate probability (c): Front probability (d): Rear probability
-4.2.2.	Quantitative Evaluation
+### 4.2.2.	Quantitative Evaluation
 Mean Average Precision (mAP) is often used for the evaluation of an object detector. The av-erage precision refers to the average value of the precisions with different recalls and is calcu-lated for each class individually. Mean average precision then refers to the arithmetic mean value of the average precisions of all of the classes. To be clear, although we only have one class (license plate) in the model, in our evaluation, we still used the term mAP for consistency. Before moving on to the quantitative evaluation, in the following contents, we will first de-clare the different mAP metrics that might be confusing.
 	The early calculation method for mAP is proposed by the Pascal VOC challenge, they calculated the 11 points of precision values by interpolation with recall value from 0 to 1.0 with an interval of 0.1. The average precision is then calculated by the average of those preci-sion values. In Pascal VOC mAP, they treat the detection result as a true positive detection if the IoU with the ground-truth label is larger than 0.5.
 	Since recent object detection research tended to move to MS COCO dataset as a bench-mark, we used the new metric for mAP calculation proposed in MS COCO. They used 101 points of precision values by interpolation with recall value from 0 to 1.0 with an interval of 0.01. Different from the Pascal VOC metric, they treat a detection as a true positive detection under different IoU threshold settings. The main metric, mAP, refers to the average mAP cal-culated by 10 IoU thresholds from 0.5 to 0.95 with interval 0.05. mAP50 refers to the mean average precision with IoU threshold = 0.5. While the most strict metric, mAP75, is the mean average precision with IoU threshold = 0.75. We used the MS COCO calculation method for all of our evaluations; for reference, mAP50 will be the most similar metric compared to the Pascal VOC metric.
@@ -151,7 +150,7 @@ VerNeX (single scale 512)	36.5	70.4	35.2	40.1	72.5	38.5
 VerNeX (256+512)	37.2	72.2	37.9	41.3	74.3	41.3
 VerNeX (256+512+1024)	43.3	84.1	41.9	48.9	84.1	51.7
 
-4.3.	Discussion
+## 4.3.	Discussion
 The learning states for each functional head are shown in Figure 4.8, Figure 4.9 and Figure 4.10. The states are the results of single-scale testing with a dimension of 512. This section is strongly related to section 3.3.3 and Figure 3.9, referring them will have better comprehen-sion.
 	For the license plate mAP50 performance in Figure 4.8, the model learned fast in the ear-ly 300k iterations, after that, the learning state became steady and tended to be overfitting after 600k iterations. The training settings modifications at 330k and 434k described in section 3.3.3 fine-tuned the model slightly to get mAP50 beyond 80, but the Oblique_KR dataset did not significantly benefit the mAP for the CD-HARD dataset since the obliqueness levels in the CD-HARD dataset is not that heavy as the ones in the Oblique_KR dataset.
 	The IoU performance of the front-rear region is shown in Figure 4.9. A leap can be ob-served after 400k iterations, which was the benefited result from the label encoding strategy at 423k mentioned in section 3.3.3. This gave us an insight that a proper design of the labeling strategy can undoubtedly have a massive effect on the performance of a supervised learning object detector.
