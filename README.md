@@ -25,8 +25,8 @@
 
 </table>
 
-![heatmap2](chapters/pics/heatmap2.jpg)
-![heatmap](chapters/pics/heatmap.jpg)
+![heatmap2](chapters/pics/heatmap2.png)
+![heatmap](chapters/pics/heatmap.png)
 
 ## What kind of scenario is the model good at?
 ## -> An image with multiple cars inside, see the comparison below
@@ -47,5 +47,5 @@
 ### Backbone
 ![modelindetail](chapters/pics/modelindetail.jpg)
 ### Heads
-![Head_detail](chapters/pics/Head_detail.jpg)
+![Head_detail](chapters/pics/Head_detail.png)
 
