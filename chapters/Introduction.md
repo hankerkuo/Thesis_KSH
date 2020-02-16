@@ -20,6 +20,7 @@ In the license plate detection stage, most existing systems are based on the fro
 
 The method proposed by Silva and Jung [2] aimed to detect the license plate in a more general way, their model first detects cars inside an image and further finds the license plates for those cars, this improved the ability to find tilted license plates in pictures, as the high accuracy car detection has been developed recently. Their method highly reduced the detection missing (false-negative cases) of the license plate, but the drawback exists, within the pictures with multiple cars inside, their model might regress to a license plate which doesn’t belong to the vehicle and cause a loss of contextual information between the vehicle and the license plate, Figure 1.1 shows the potential problem and Figure 1.2 gives a real example.
 Here, we conclude two problems of license plate detection we would like to solve:
+
 1.Lack of detection ability for tilted and oblique license plates.
 
 2.Loss of contextual information while dealing with more general license plate detection.
