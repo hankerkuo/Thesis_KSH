@@ -46,6 +46,7 @@ Before the era of deep learning, Selective Search [11] was a simple and reliable
 Anchor-based method almost dominates the region proposal part among recent object detectors because of its ability to detect objects in different aspect ratios and sizes, proposing multiple objects within a single grid is also possible by applying anchor-based method. But the designing and choosing of anchor box’s aspect ratios and sizes are all manually decided, as the process is done in a heuristic manner, it might be a limitation for a network to bring out their best potential. Some efforts have been made to choose better anchor box, Redmon and Farhadi [22] used k-means to cluster the training data for obtaining anchor boxes with more preferable aspect ratios, our previous work for detecting vehicle’s front and rear also introduced k-means clustering to decide the default anchor boxes [23].
 
 Although the refined method for defining anchor box does not count on heuristic design anymore, the large variety of aspect ratios and sizes of objects around the world are not even possible contained by a limited amount of anchor boxes, so here we state the potential problems of anchor-based method:
+
 1.Anchor box designed by referencing training data might not be compatible with real cases.
 
 2.The concept of anchor box is not natural since it is not possible to represent the abundant object categories in the world with a limited amount of anchor boxes.
@@ -89,7 +90,7 @@ Figure 2.5. Focal Loss [14]. The Cross-Entropy loss is the curve with γ= 0. The
 ## 2.4.	Non-Maximum Suppression (NMS)
 In the test stage of an object detector, the output object probability larger than a decided threshold will be considered a positive detection result. There will be a massive amount of duplicated bounding boxes for a single object, to eliminate the duplicated ones and keep the most-likely one, we often perform Non-Maximum Suppression (NMS).
 
-Equation 2.4.1 shows the process of NMS, NMS first arranges all of the detection results according to their probability score (ScoreB) of having an object in descending order. Let M be the result with the highest score, compare the results B having less score than M, if the Intersection over Union (IoU) between M’s bounding box and B’s bounding box is greater than a specific threshold  , then the score of B will be set to zero, or to say remove the detection result of B, else if the IoU is smaller than  , B will remain there. This process performs iteratively until the detection result with the lowest score has been checked. Figure 2.6 gives an example of bounding box removal.
+Equation 2.4.1 shows the process of NMS, NMS first arranges all of the detection results according to their probability score (ScoreB) of having an object in descending order. Let M be the result with the highest score, compare the results B having less score than M, if the Intersection over Union (IoU) between M’s bounding box and B’s bounding box is greater than a specific threshold Ωtest, then the score of B will be set to zero, or to say remove the detection result of B, else if the IoU is smaller than Ωtest, B will remain there. This process performs iteratively until the detection result with the lowest score has been checked. Figure 2.6 gives an example of bounding box removal.
 
 ![equation2.4.1](pics/equation2.4.1.png)
 
