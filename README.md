@@ -1,4 +1,5 @@
 # An Anchor-Free Object Detector with Contextual Information for License Plate Detection
+Detailed paper site: https://hankerkuo.github.io/Thesis_KSH/chapters/Abstract
 
 ## What does the model do?
 ### License plate detection & Car pose estimation!
